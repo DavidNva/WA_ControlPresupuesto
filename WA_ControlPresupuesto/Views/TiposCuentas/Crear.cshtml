@@ -1,0 +1,47 @@
+﻿@model TipoCuenta
+@{
+    ViewData["Title"] = "Crear Tipo Cuenta";
+}
+
+
+<h1>Crear Tipo de Cuenta</h1>
+<h5>
+    El tipo de cuenta se refiere a cómo podemos agrupar cuentas.
+    Ejemplos: Préstamos, tarjetas de crédito, etc.
+</h5>
+@*All va a mostrar todos los errores, ModelOnly solo models u only*@
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-controller="TiposCuentas" asp-action="Crear">
+    <div class="mb-3">
+        <label asp-for="Nombre" class="form-label"></label>
+        <input type="text" id="Nombre"  asp-for="Nombre" class="form-control" />
+    </div>
+    @* con esto Nombre viene desde propiedades del modelo y valida sin eliminar lo que el user ya tenia escrito
+ *@
+
+   @*  Nuevas propiedades ejemplo para verificar funcionamiento de validaciones como email, edad, URL,  tarjeta de credito, etc. 
+ *@
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" id="Email" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Edad" class="form-label"></label>
+        <input asp-for="Edad" class="form-control" id="Edad" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="URL" class="form-label"></label>
+        <input asp-for="URL" class="form-control" id="URL" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="TarjetaDeCredito" class="form-label"></label>
+        <input asp-for="TarjetaDeCredito" class="form-control" id="TarjetaDeCredito" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enviar</button>
+</form>
+
+
