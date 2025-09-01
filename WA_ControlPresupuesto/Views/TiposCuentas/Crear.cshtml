@@ -10,7 +10,7 @@
     Ejemplos: Préstamos, tarjetas de crédito, etc.
 </h5>
 @*All va a mostrar todos los errores, ModelOnly solo models u only*@
-<div asp-validation-summary="All" class="text-danger"></div>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
 <form asp-controller="TiposCuentas" asp-action="Crear">
     <div class="mb-3">
@@ -23,7 +23,7 @@
 
    @*  Nuevas propiedades ejemplo para verificar funcionamiento de validaciones como email, edad, URL,  tarjeta de credito, etc. 
  *@
-    <div class="mb-3">
+   @*  <div class="mb-3">
         <label asp-for="Email" class="form-label"></label>
         <input asp-for="Email" class="form-control" id="Email" />
         <span asp-validation-for="Email" class="text-danger"></span>
@@ -44,7 +44,7 @@
         <label asp-for="TarjetaDeCredito" class="form-label"></label>
         <input asp-for="TarjetaDeCredito" class="form-control" id="TarjetaDeCredito" />
         <span asp-validation-for="TarjetaDeCredito" class="text-danger"></span>
-    </div>
+    </div> *@
 
     <button type="submit" class="btn btn-primary">Enviar</button>
 </form>
