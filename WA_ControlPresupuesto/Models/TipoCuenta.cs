@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using WA_ControlPresupuesto.Validations;
 
@@ -11,6 +12,7 @@ namespace WA_ControlPresupuesto.Models
         [Required(ErrorMessage = "El campo {0} es requerido")]
         [Display(Name ="Nombre del tipo cuenta")]
         [PrimeraLetraMayusculas]
+        [Remote(action: "VerificarExisteTipoCuenta", controller:"TiposCuentas")]
         public string Nombre { get; set; }
         public int UsuarioId { get; set; }
         public int Orden {  get; set; }

@@ -41,5 +41,19 @@ namespace WA_ControlPresupuesto.Controllers
             return View(tipoCuenta);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> VerificarExisteTipoCuenta(string nombre)
+        {
+            var usuarioId = 1;//por lo pronto usaremos este hardcode
+
+            var yaExisteTipoCuenta = await repositorioTiposCuentas.Existe(nombre, usuarioId);
+            if (yaExisteTipoCuenta)
+            {
+                return Json($"El nombre {nombre} ya existe");
+            }
+            return Json(true);
+        }
+        //Json es un formato para representar datos como una cadena de texto, sirve para llevar datos de un lugar a otro. Por ejemplo con json puedo tomar un objeto de javascript, serializarlo a json y trasmitirlo a una aplicacion de c#. Y tambien se puede hacer lo inverso, de la app de c#, serializarlo, llevarlo a JavaScript, deserealizarlo alli y acceder a sus valores
+
     }
 }
