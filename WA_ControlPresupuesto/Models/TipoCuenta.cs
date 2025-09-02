@@ -4,36 +4,36 @@ using WA_ControlPresupuesto.Validations;
 
 namespace WA_ControlPresupuesto.Models
 {
-    public class TipoCuenta: IValidatableObject
+    public class TipoCuenta/*: IValidatableObject*/
     {
         public int Id { get; set; }
 
         [Required(ErrorMessage = "El campo {0} es requerido")]
         [Display(Name ="Nombre del tipo cuenta")]
-        //[PrimeraLetraMayusculas]
+        [PrimeraLetraMayusculas]
         public string Nombre { get; set; }
         public int UsuarioId { get; set; }
         public int Orden {  get; set; }
 
 
 
-        public IEnumerable<ValidationResult> Validate (ValidationContext validationContext)
-        {
-            if(Nombre !=null && Nombre.Length > 0)
-            {
-                var primeraLetra = Nombre[0].ToString();
-                //if(primeraLetra != primeraLetra.ToUpper())
-                //{//Esto tambien se puede hacer y asi validamos por atrubuto desde aqui en la misma clase, claro aunnque ya no seria global para demas models
-                //    yield return new ValidationResult("La primera letra debe ser mayúscula desde ValidateModel", 
-                //        new[] {nameof(Nombre)});
-                //}
+        //public IEnumerable<ValidationResult> Validate (ValidationContext validationContext)
+        //{
+        //    if(Nombre !=null && Nombre.Length > 0)
+        //    {
+        //        var primeraLetra = Nombre[0].ToString();
+        //        //if(primeraLetra != primeraLetra.ToUpper())
+        //        //{//Esto tambien se puede hacer y asi validamos por atrubuto desde aqui en la misma clase, claro aunnque ya no seria global para demas models
+        //        //    yield return new ValidationResult("La primera letra debe ser mayúscula desde ValidateModel", 
+        //        //        new[] {nameof(Nombre)});
+        //        //}
 
-                if (primeraLetra != primeraLetra.ToUpper())
-                {
-                    yield return new ValidationResult("La primera letra debe ser mayúscula desde ValidateModel");
-                }//de esta forma esta validacion no aplica a un solo atributo,sino al modelo
-            }
-        }
+        //        if (primeraLetra != primeraLetra.ToUpper())
+        //        {
+        //            yield return new ValidationResult("La primera letra debe ser mayúscula desde ValidateModel");
+        //        }//de esta forma esta validacion no aplica a un solo atributo,sino al modelo
+        //    }
+        //}
         /*Pruebas de otras validaciones por defecto*/
 
         //[Required(ErrorMessage = "El campo {0} es requerido")]
