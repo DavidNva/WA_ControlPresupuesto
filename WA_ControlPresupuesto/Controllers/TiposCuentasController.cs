@@ -1,6 +1,4 @@
-﻿using Dapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Mvc;
 using WA_ControlPresupuesto.Models;
 using WA_ControlPresupuesto.Services;
 
@@ -9,22 +7,24 @@ namespace WA_ControlPresupuesto.Controllers
     public class TiposCuentasController : Controller
     {
         private readonly IRepositorioTiposCuentas repositorioTiposCuentas;
+        private readonly IServicioUsuarios servicioUsuarios;
 
-        public TiposCuentasController(IRepositorioTiposCuentas repositorioTiposCuentas) 
+        public TiposCuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, IServicioUsuarios servicioUsuarios)
         {
             this.repositorioTiposCuentas = repositorioTiposCuentas;
+            this.servicioUsuarios = servicioUsuarios;
         }
 
         public async Task<IActionResult> Index()
         {
-            var usuarioId = 1;
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var tiposCuentas = await repositorioTiposCuentas.Obtener(usuarioId);
             return View(tiposCuentas);
         }
 
         public IActionResult Crear()
         {
-           
+
             return View();
         }
 
@@ -35,7 +35,7 @@ namespace WA_ControlPresupuesto.Controllers
             {
                 return View(tipoCuenta);
             }
-            tipoCuenta.UsuarioId = 1;
+            tipoCuenta.UsuarioId = servicioUsuarios.ObtenerUsuarioId();
 
             var yaExisteTipoCuenta = await repositorioTiposCuentas.Existe(tipoCuenta.Nombre, tipoCuenta.UsuarioId);
             if (yaExisteTipoCuenta)
@@ -51,7 +51,7 @@ namespace WA_ControlPresupuesto.Controllers
         [HttpGet]
         public async Task<IActionResult> VerificarExisteTipoCuenta(string nombre)
         {
-            var usuarioId = 1;//por lo pronto usaremos este hardcode
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
 
             var yaExisteTipoCuenta = await repositorioTiposCuentas.Existe(nombre, usuarioId);
             if (yaExisteTipoCuenta)
