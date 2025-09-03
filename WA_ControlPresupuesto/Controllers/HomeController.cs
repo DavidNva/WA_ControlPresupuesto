@@ -18,7 +18,7 @@ namespace WA_ControlPresupuesto.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult NoEncontrado()
         {
             return View();
         }
