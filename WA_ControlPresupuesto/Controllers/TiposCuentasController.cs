@@ -93,5 +93,31 @@ namespace WA_ControlPresupuesto.Controllers
         }
         //Json es un formato para representar datos como una cadena de texto, sirve para llevar datos de un lugar a otro. Por ejemplo con json puedo tomar un objeto de javascript, serializarlo a json y trasmitirlo a una aplicacion de c#. Y tambien se puede hacer lo inverso, de la app de c#, serializarlo, llevarlo a JavaScript, deserealizarlo alli y acceder a sus valores
 
+
+        public async Task<IActionResult> Borrar(int id)
+        {
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
+            var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(id, usuarioId);
+            if (tipoCuenta is null)
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+                //No encontrado es la vista que hicimos en HomeController y el Home es el controlador
+            }
+            return View(tipoCuenta);
+        }//Este metodo es usado para mostrar la vista de confirmacion de borrado, aunque parezca que no hace nada, si hace, porque busca el tipo de cuenta a borrar y si no lo encuentra redirige a la vista de no encontrado
+
+        [HttpPost]
+        public async Task<IActionResult> BorrarTipoCuenta(int id)
+        {
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
+            var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(id, usuarioId);
+            if (tipoCuenta is null)
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+                //No encontrado es la vista que hicimos en HomeController y el Home es el controlador
+            }
+            await repositorioTiposCuentas.Borrar(id);
+            return RedirectToAction("Index");
+        }//Este metodo es usado para hacer el borrado en si, es decir cuando se confirma el borrado
     }
 }
