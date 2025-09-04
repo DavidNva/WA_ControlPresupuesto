@@ -17,7 +17,7 @@
             <th>Nombre</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="reordenable">
         @foreach(var tipoCuenta in Model)
         {
             <tr>
@@ -32,3 +32,12 @@
         }
     </tbody>
 </table>
+
+
+@section Scripts {
+    <script>
+         $(function(){
+            $("#reordenable").sortable();
+         }) 
+    </script>
+}
