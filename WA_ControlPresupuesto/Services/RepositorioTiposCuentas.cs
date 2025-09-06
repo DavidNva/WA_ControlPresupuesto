@@ -12,6 +12,7 @@ namespace WA_ControlPresupuesto.Services
         Task<bool> Existe(string nombre, int usuarioId);
         Task<IEnumerable<TipoCuenta>> Obtener(int usuarioId);
         Task<TipoCuenta> ObtenerPorId(int id, int usuarioId);
+        Task Ordenar(IEnumerable<TipoCuenta> tiposCuentasOrdenados);
     }
 
     public class RepositorioTiposCuentas : IRepositorioTiposCuentas
@@ -28,8 +29,10 @@ namespace WA_ControlPresupuesto.Services
         public async Task Crear(TipoCuenta tipoCuenta)
         {//para hacer una espera asincrona del query
             using var connection = new SqlConnection(connectionString);
-            var id = await connection.QuerySingleAsync<int>($@"INSERT INTO TiposCuentas (Nombre, UsuarioId, Orden) VALUES(@Nombre, @UsuarioId, 0); 
-    SELECT SCOPE_IDENTITY();", tipoCuenta);
+            var id = await connection.QuerySingleAsync<int>("sp_TiposCuentas_Insertar",
+                                            new {usuarioId = tipoCuenta.UsuarioId,
+                                            nombre = tipoCuenta.Nombre},
+                                            commandType: System.Data.CommandType.StoredProcedure );
 
             tipoCuenta.Id = id;
         }
@@ -51,7 +54,7 @@ namespace WA_ControlPresupuesto.Services
             using var connection = new SqlConnection(connectionString);
             return await connection.QueryAsync<TipoCuenta>(@"SELECT Id, Nombre, Orden 
                                                             FROM TiposCuentas
-                                                            Where UsuarioId = @UsuarioId", new { usuarioId });
+                                                            Where UsuarioId = @UsuarioId ORDER BY Orden", new { usuarioId });
         }
 
         public async Task Actualizar(TipoCuenta tipoCuenta)
@@ -80,5 +83,13 @@ namespace WA_ControlPresupuesto.Services
             //Lo ponemos asi, porque al usar dapper, si ponemos tipoCuenta.Id nos dara error
             //Entonces, pones new { id } y dapper entiende que es un objeto anonimo y que id va en @id
         }
+
+        public async Task Ordenar(IEnumerable<TipoCuenta> tiposCuentasOrdenados)
+        {
+            var query = "UPDATE TiposCuentas SET Orden = @Orden WHERE Id = @Id;";
+            using var connection = new SqlConnection(connectionString);
+            await connection.ExecuteAsync(query, tiposCuentasOrdenados);
+        }//Aunque en el metodo no estemos viendo ningun foreach, dapper internamente hace un foreach por cada elemento del IEnumerable y ejecuta el query por cada uno de ellos, pasando los valores de Id y Orden de cada elemento 
+        //Esto lo hace o sabe que lo debe hacer asi porque le pasamos un IEnumerable, si le pasas un objeto normal, entonces solo lo ejecuta una vez
     }
 }
