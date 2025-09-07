@@ -21,6 +21,6 @@ namespace WA_ControlPresupuesto.Models
         public string? Descripcion { get; set; }//Por default, valida en teoria nulls o empty strings, cadenas vacias, es decir, aunque no pusimos explicitamente [Required], si lo dejabamos asi, en la vista nos lo pediria obligatoriamente. Por ello, si queremos que sea opcional, debemos poner el ? despues del tipo de dato. 
         //Ese signo ? indica que puede ser null esa propiedad, campo,etc. 
 
-
+        //public string TipoCuenta { get; set; }
     }
 }

@@ -32,10 +32,12 @@ namespace WA_ControlPresupuesto.Controllers
         {
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(cuenta.TipoCuentaId, usuarioId);
+
             if(tipoCuenta is null)
             {
                 return RedirectToAction("NoEncontrado", "Home");
             }
+
             if(!ModelState.IsValid)
             {//Si el modelo no es valido, volvemos a cargar los tipos de cuentas para que el usuario pueda ver el dropdown
                 cuenta.TiposCuentas = await ObtenerTiposCuentas(usuarioId);
@@ -43,7 +45,6 @@ namespace WA_ControlPresupuesto.Controllers
             }
 
             await repositorioCuentas.Crear(cuenta);
-
             return RedirectToAction("Index");
         }
 
