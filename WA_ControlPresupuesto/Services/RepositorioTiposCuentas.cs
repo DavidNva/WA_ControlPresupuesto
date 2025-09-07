@@ -24,19 +24,7 @@ namespace WA_ControlPresupuesto.Services
             connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        //Aplicando programación asincrona
-        //TASK ASI SOLO es como un void, como un void asincrona
-        public async Task Crear(TipoCuenta tipoCuenta)
-        {//para hacer una espera asincrona del query
-            using var connection = new SqlConnection(connectionString);
-            var id = await connection.QuerySingleAsync<int>("sp_TiposCuentas_Insertar",
-                                            new {usuarioId = tipoCuenta.UsuarioId,
-                                            nombre = tipoCuenta.Nombre},
-                                            commandType: System.Data.CommandType.StoredProcedure );
-
-            tipoCuenta.Id = id;
-        }
-
+       
         public async Task<bool> Existe(string nombre, int usuarioId)
         {
             using var connection = new SqlConnection(connectionString);
@@ -57,14 +45,6 @@ namespace WA_ControlPresupuesto.Services
                                                             Where UsuarioId = @UsuarioId ORDER BY Orden", new { usuarioId });
         }
 
-        public async Task Actualizar(TipoCuenta tipoCuenta)
-        {
-            using var connection = new SqlConnection(connectionString);
-            await connection.ExecuteAsync(@"UPDATE TiposCuentas 
-                                            SET Nombre = @Nombre
-                                            WHERE Id = @Id", tipoCuenta);
-        }
-
         public async Task<TipoCuenta> ObtenerPorId(int id, int usuarioId)
         {
             using var connection = new SqlConnection(connectionString);
@@ -75,6 +55,29 @@ namespace WA_ControlPresupuesto.Services
 
         }
 
+        //Aplicando programación asincrona
+        //TASK ASI SOLO es como un void, como un void asincrona
+        public async Task Crear(TipoCuenta tipoCuenta)
+        {//para hacer una espera asincrona del query
+            using var connection = new SqlConnection(connectionString);
+            var id = await connection.QuerySingleAsync<int>("sp_TiposCuentas_Insertar",
+                                            new
+                                            {
+                                                usuarioId = tipoCuenta.UsuarioId,
+                                                nombre = tipoCuenta.Nombre
+                                            },
+                                            commandType: System.Data.CommandType.StoredProcedure);
+
+            tipoCuenta.Id = id;
+        }
+
+        public async Task Actualizar(TipoCuenta tipoCuenta)
+        {
+            using var connection = new SqlConnection(connectionString);
+            await connection.ExecuteAsync(@"UPDATE TiposCuentas 
+                                            SET Nombre = @Nombre
+                                            WHERE Id = @Id", tipoCuenta);
+        }
 
         public async Task Borrar(int id)
         {
