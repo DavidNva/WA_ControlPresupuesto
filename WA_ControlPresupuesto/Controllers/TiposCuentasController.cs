@@ -24,7 +24,6 @@ namespace WA_ControlPresupuesto.Controllers
 
         public IActionResult Crear()
         {
-
             return View();
         }
 
