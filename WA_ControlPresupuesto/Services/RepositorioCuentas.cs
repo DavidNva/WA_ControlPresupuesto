@@ -6,8 +6,10 @@ namespace WA_ControlPresupuesto.Services
 {
     public interface IRepositorioCuentas
     {
+        Task Actualizar(Cuenta cuenta);
         Task<IEnumerable<Cuenta>> Buscar(int usuarioId);
         Task Crear(Cuenta cuenta);
+        Task<Cuenta> ObtenerPorId(int id, int usuarioId);
     }
 
     public class RepositorioCuentas : IRepositorioCuentas
@@ -28,6 +30,16 @@ namespace WA_ControlPresupuesto.Services
                 Order BY tc.Orden", new { usuarioId });
         }
 
+        public async Task<Cuenta> ObtenerPorId(int id, int usuarioId)//Hacemos el inner join de Cuentas y TiposCuentas para asegurarnos que la cuenta por medio de su id que estamos obteniendo pertenece al usuario que hizo la peticion.
+        {
+            var connection = new SqlConnection(connectionString);
+            return await connection.QueryFirstOrDefaultAsync<Cuenta>(
+                @"SELECT c.Id, c.Nombre, c.Balance,c.Descripcion,  tc.Id 
+                FROM Cuentas c inner join TiposCuentas tc on tc.Id = c.TipoCuentaId
+                WHERE c.Id = @Id AND tc.UsuarioId = @UsuarioId", new { id, usuarioId });
+                
+        }
+
         public async Task Crear(Cuenta cuenta)//Es como un void asincrono, porque no devuelve nada 
         {
             using var connection = new SqlConnection(connectionString);
@@ -37,7 +49,18 @@ namespace WA_ControlPresupuesto.Services
                 SELECT SCOPE_IDENTITY();", cuenta);//Usamos QuerySingleAsync<int> porque esperamos un unico resultado, que es el id que se acaba de insertar. Si no devolviera nada, usariamos ExecuteAsync.
             cuenta.Id = id;
         }
-
         
+
+        public async Task Actualizar(Cuenta cuenta)
+        {
+            using var connection = new SqlConnection(connectionString);
+            await connection.ExecuteAsync(@"UPDATE Cuentas SET 
+                                            Nombre = @Nombre, 
+                                            Balance = @Balance, 
+                                            Descripcion = @Descripcion,
+                                            TipoCuentaId = @TipoCuentaId
+                                            WHERE Id = @Id", cuenta);
+        }
+
     }
 }

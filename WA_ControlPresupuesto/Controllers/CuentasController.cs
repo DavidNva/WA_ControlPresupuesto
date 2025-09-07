@@ -23,7 +23,7 @@ namespace WA_ControlPresupuesto.Controllers
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var cuentasConTipoCuenta = await repositorioCuentas.Buscar(usuarioId);
 
-            var modelo =  cuentasConTipoCuenta.
+            var modelo = cuentasConTipoCuenta.
                 GroupBy(x => x.TipoCuenta)//Vamos a agrupar las cuentas por el TipoCuenta, por ejemplo: Ahorros, Tarjetas, etc
                 .Select(grupo => new IndiceCuentasViewModel
                 {
@@ -50,18 +50,24 @@ namespace WA_ControlPresupuesto.Controllers
             return View(modelo);
         }
 
+        private async Task<IEnumerable<SelectListItem>> ObtenerTiposCuentas(int usuarioId)
+        {
+            var tiposCuentas = await repositorioTiposCuentas.Obtener(usuarioId);
+            return tiposCuentas.Select(x => new SelectListItem(x.Nombre, x.Id.ToString()));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Crear(CuentaCreacionViewModel cuenta)
         {
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(cuenta.TipoCuentaId, usuarioId);
 
-            if(tipoCuenta is null)
+            if (tipoCuenta is null)
             {
                 return RedirectToAction("NoEncontrado", "Home");
             }
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {//Si el modelo no es valido, volvemos a cargar los tipos de cuentas para que el usuario pueda ver el dropdown
                 cuenta.TiposCuentas = await ObtenerTiposCuentas(usuarioId);
                 return View(cuenta);
@@ -71,10 +77,51 @@ namespace WA_ControlPresupuesto.Controllers
             return RedirectToAction("Index");
         }
 
-        private async Task<IEnumerable<SelectListItem>> ObtenerTiposCuentas(int usuarioId)
+
+        public async Task<IActionResult> Editar(int id)//Solo hace la consulta de  TiposCuentas para llenar el dropdown y lo retornar a la vista y demas datos para el autollenado de cuando se este editando
         {
-            var tiposCuentas = await repositorioTiposCuentas.Obtener(usuarioId);
-            return tiposCuentas.Select(x => new SelectListItem(x.Nombre, x.Id.ToString()));
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
+            var cuenta = await repositorioCuentas.ObtenerPorId(id, usuarioId);
+            if (cuenta is null)
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+
+            var modelo = new CuentaCreacionViewModel()
+            {
+                Id = cuenta.Id,
+                Nombre = cuenta.Nombre,
+                TipoCuentaId = cuenta.TipoCuentaId,
+                Descripcion = cuenta.Descripcion,
+                Balance = cuenta.Balance
+            };
+            modelo.TiposCuentas = await ObtenerTiposCuentas(usuarioId);
+
+            return View(modelo);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Editar(CuentaCreacionViewModel cuentaEditar)
+        {
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
+            var cuenta = await repositorioCuentas.ObtenerPorId(cuentaEditar.Id, usuarioId);
+            if (cuenta is null)
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+            var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(cuentaEditar.TipoCuentaId, usuarioId);
+            if (tipoCuenta is null)
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+            if (!ModelState.IsValid)
+            {
+                cuentaEditar.TiposCuentas = await ObtenerTiposCuentas(usuarioId);
+                return View(cuentaEditar);
+            }
+            await repositorioCuentas.Actualizar(cuentaEditar);
+            return RedirectToAction("Index");
+
         }
     }
 }
