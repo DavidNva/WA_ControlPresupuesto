@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WA_ControlPresupuesto.Validations;
+
 namespace WA_ControlPresupuesto.Models
 {
     public class Cuenta
@@ -15,12 +16,16 @@ namespace WA_ControlPresupuesto.Models
         [Display(Name = "Tipo de Cuenta")]
         public int TipoCuentaId { get; set; }
 
-        public decimal Balance { get; set; }
+        //Aqui al valacen como valor decimal, podemos poner la validacion que solo acepte valores ppositivos y mayores a cero. Para esto debemos: 
+        //Esto esta diciendo:
+        //El valor minimo es 1 y el maximo es el valor maximo que puede tener un double. Si alguien intenta poner un valor negativo, salta el error con el mensaje indicado.
+        //[Range(1, double.MaxValue, ErrorMessage = "El campo {0} debe ser mayor a cero")]
+        public decimal Balance { get; set; }//En este caso como habra datos positivos y negativos, no ponemos la validacion de que sea mayor a cero.
 
         [StringLength(maximumLength: 1000)]
         public string? Descripcion { get; set; }//Por default, valida en teoria nulls o empty strings, cadenas vacias, es decir, aunque no pusimos explicitamente [Required], si lo dejabamos asi, en la vista nos lo pediria obligatoriamente. Por ello, si queremos que sea opcional, debemos poner el ? despues del tipo de dato. 
         //Ese signo ? indica que puede ser null esa propiedad, campo,etc. 
 
-        //public string TipoCuenta { get; set; }
+        public string? TipoCuenta { get; set; }//Debemos colocar que acepta null, de lo contrario nos da error porque validará solitando un valor obligariamente. 
     }
 }
