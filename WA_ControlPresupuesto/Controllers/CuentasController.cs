@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WA_ControlPresupuesto.Models;
 using WA_ControlPresupuesto.Services;
@@ -10,12 +11,14 @@ namespace WA_ControlPresupuesto.Controllers
         private readonly IRepositorioTiposCuentas repositorioTiposCuentas;
         private readonly IServicioUsuarios servicioUsuarios;
         private readonly IRepositorioCuentas repositorioCuentas;
+        private readonly IMapper mapper;
 
-        public CuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas)
+        public CuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas, IMapper mapper)
         {
             this.repositorioTiposCuentas = repositorioTiposCuentas;
             this.servicioUsuarios = servicioUsuarios;
             this.repositorioCuentas = repositorioCuentas;
+            this.mapper = mapper;
         }
 
         public async Task<IActionResult> Index()
@@ -87,14 +90,18 @@ namespace WA_ControlPresupuesto.Controllers
                 return RedirectToAction("NoEncontrado", "Home");
             }
 
-            var modelo = new CuentaCreacionViewModel()
-            {
-                Id = cuenta.Id,
-                Nombre = cuenta.Nombre,
-                TipoCuentaId = cuenta.TipoCuentaId,
-                Descripcion = cuenta.Descripcion,
-                Balance = cuenta.Balance
-            };
+            var modelo = mapper.Map<CuentaCreacionViewModel>(cuenta);//Ya con esto estoy mapeando los datos de cuenta a CuentaCreacionViewModel
+            //Explicado es decir antes teniamos: 
+            //var modelo = new CuentaCreacionViewModel();
+            //modelo.Id = cuenta.Id;
+            //modelo.Nombre = cuenta.Nombre;
+            //modelo.Balance = cuenta.Balance;
+            //modelo.Descripcion = cuenta.Descripcion;
+            //modelo.TipoCuentaId = cuenta.TipoCuentaId;
+            //Ahora con el mapper, ya no es necesario hacer todo eso, porque el automapper lo hace por nosotros. Solo debemos asegurarnos que las propiedades tengan el mismo nombre en ambos modelos.
+            //Y como funciona esto? Porque en Startup.cs o Program.cs, donde sea que estemos configurando los servicios, ya hemos configurado el automapper y le hemos dicho que mapee entre Cuenta y CuentaCreacionViewModel. Entonces, cuando llamamos a mapper.Map<CuentaCreacionViewModel>(cuenta), el automapper sabe que debe tomar las propiedades de cuenta y asignarlas a un nuevo objeto de tipo CuentaCreacionViewModel.
+            //Es un poco dificil de entender al principio, pero es muy util cuando tenemos muchos modelos y queremos evitar escribir mucho codigo repetitivo para mapear entre ellos.
+            //Un ejemplo mas claro es si tenemos un modelo de entidad que representa una tabla en la base de datos y un modelo de vista que representa los datos que queremos mostrar en la vista. Entonces, podemos usar el automapper para mapear entre estos dos modelos sin tener que escribir mucho codigo repetitivo.
             modelo.TiposCuentas = await ObtenerTiposCuentas(usuarioId);
 
             return View(modelo);

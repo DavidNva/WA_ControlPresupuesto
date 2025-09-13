@@ -14,6 +14,7 @@ namespace WA_ControlPresupuesto.Services
 
     public class RepositorioCuentas : IRepositorioCuentas
     {
+
         private readonly string connectionString;
         public RepositorioCuentas(IConfiguration configuration)
         {
@@ -29,15 +30,14 @@ namespace WA_ControlPresupuesto.Services
                 WHERE tc.UsuarioId = @UsuarioId
                 Order BY tc.Orden", new { usuarioId });
         }
-
+        
         public async Task<Cuenta> ObtenerPorId(int id, int usuarioId)//Hacemos el inner join de Cuentas y TiposCuentas para asegurarnos que la cuenta por medio de su id que estamos obteniendo pertenece al usuario que hizo la peticion.
         {
-            var connection = new SqlConnection(connectionString);
+            using var connection = new SqlConnection(connectionString);
             return await connection.QueryFirstOrDefaultAsync<Cuenta>(
-                @"SELECT c.Id, c.Nombre, c.Balance,c.Descripcion,  tc.Id 
-                FROM Cuentas c inner join TiposCuentas tc on tc.Id = c.TipoCuentaId
-                WHERE c.Id = @Id AND tc.UsuarioId = @UsuarioId", new { id, usuarioId });
-                
+            @"SELECT c.Id, c.Nombre, c.Balance, c.Descripcion, c.TipoCuentaId
+            FROM Cuentas c INNER JOIN TiposCuentas tc ON tc.Id = c.TipoCuentaId 
+            WHERE c.Id = @Id AND tc.UsuarioId = @UsuarioId", new { id, usuarioId });
         }
 
         public async Task Crear(Cuenta cuenta)//Es como un void asincrono, porque no devuelve nada 
@@ -49,7 +49,7 @@ namespace WA_ControlPresupuesto.Services
                 SELECT SCOPE_IDENTITY();", cuenta);//Usamos QuerySingleAsync<int> porque esperamos un unico resultado, que es el id que se acaba de insertar. Si no devolviera nada, usariamos ExecuteAsync.
             cuenta.Id = id;
         }
-        
+
 
         public async Task Actualizar(Cuenta cuenta)
         {
