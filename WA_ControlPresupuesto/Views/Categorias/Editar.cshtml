@@ -2,7 +2,31 @@
 @{
     ViewData["Title"] = "Editar Categoria";
 }
-<h1>@ViewData["Title"]</h1>
-<h5>La categoria nos permite indicar en qué gastamso nuestro dinero, 
-    también, de dónde provienen nuestros ingresos. </h5>
 
+<h1>@ViewData["Title"]</h1>
+<h5>La categoría nos permite indicar en qué gastamos nuestro dinero, también, de dónde provienen nuestros ingresos</h5>
+
+<form asp-action="Editar">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <div class="form-group mb-3">
+        <label asp-for="Nombre" class="form-label"></label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="TipoOperacionId" class="form-label"></label>
+        <select asp-for="TipoOperacionId" class="form-select" asp-items="Html.GetEnumSelectList<TipoOperacion>()">
+        </select>
+        <span asp-validation-for="TipoOperacionId" class="text-danger"></span>
+
+    </div>
+    <button type="submit" class="btn btn-primary">Editar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
+
+@section Scripts {
+    @*  con esto incluimos las validaciones del lado del cliente, que ya vienen por defecto en ASP.NET Core MVC
+    estamo usando Tag Helpers y la validación se basa en data annotations. Tambien jquery Validation *@
+    <partial name="_ValidationScriptsPartial" />
+}
