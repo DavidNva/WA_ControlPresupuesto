@@ -7,6 +7,7 @@ namespace WA_ControlPresupuesto.Services
     public interface IRepositorioCuentas
     {
         Task Actualizar(Cuenta cuenta);
+        Task Borrar(int id);
         Task<IEnumerable<Cuenta>> Buscar(int usuarioId);
         Task Crear(Cuenta cuenta);
         Task<Cuenta> ObtenerPorId(int id, int usuarioId);
@@ -30,7 +31,7 @@ namespace WA_ControlPresupuesto.Services
                 WHERE tc.UsuarioId = @UsuarioId
                 Order BY tc.Orden", new { usuarioId });
         }
-        
+
         public async Task<Cuenta> ObtenerPorId(int id, int usuarioId)//Hacemos el inner join de Cuentas y TiposCuentas para asegurarnos que la cuenta por medio de su id que estamos obteniendo pertenece al usuario que hizo la peticion.
         {
             using var connection = new SqlConnection(connectionString);
@@ -62,5 +63,11 @@ namespace WA_ControlPresupuesto.Services
                                             WHERE Id = @Id", cuenta);
         }
 
+
+        public async Task Borrar(int id)
+        {
+            using var connection = new SqlConnection(connectionString);
+            await connection.ExecuteAsync("DELETE Cuentas WHERE Id = @Id", new { id });
+        }
     }
 }
