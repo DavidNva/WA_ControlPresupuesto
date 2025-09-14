@@ -70,5 +70,30 @@ namespace WA_ControlPresupuesto.Controllers
             await _repositorioCategorias.Actualizar(categoriaEditar);
             return RedirectToAction("Index");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Borrar(int id)
+        {
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            var categoriaDB = await _repositorioCategorias.ObtenerPorId(id, usuarioId);
+            if (categoriaDB is null)//Significa que la categoría no existe o no pertenece al usuario logueado.
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+            return View(categoriaDB);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BorrarCategoria(int id)
+        {
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            var categoriaDB = await _repositorioCategorias.ObtenerPorId(id, usuarioId);
+            if (categoriaDB is null)//Significa que la categoría no existe o no pertenece al usuario logueado.
+            {
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+            await _repositorioCategorias.Borrar(id);
+            return RedirectToAction("Index");
+        }
     }
 }
