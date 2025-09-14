@@ -52,8 +52,8 @@ namespace WA_ControlPresupuesto.Controllers
         {
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(id, usuarioId);
-            
-            if(tipoCuenta is null)
+
+            if (tipoCuenta is null)
             {
                 return RedirectToAction("NoEncontrado", "Home");
             }
@@ -66,7 +66,7 @@ namespace WA_ControlPresupuesto.Controllers
         {
             var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var tipoCuentaExiste = await repositorioTiposCuentas.ObtenerPorId(tipoCuenta.Id, usuarioId);
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return View(tipoCuenta);
             }
@@ -143,7 +143,7 @@ namespace WA_ControlPresupuesto.Controllers
             {
                 return Forbid();//403 //Significa que no tiene permisos, prohibido
             }
-            var tiposCuentasOrdenados = ids.Select((valor, indice) => 
+            var tiposCuentasOrdenados = ids.Select((valor, indice) =>
             new TipoCuenta() { Id = valor, Orden = indice + 1 }).AsEnumerable();
             //explicado de manera sencilla y simple de entender, decimos: toma los ids que me enviaste y por cada uno de esos ids dame su valor y su indice, con eso crea un nuevo objeto de tipo TipoCuenta, asignale el id con el valor que me diste y el orden con el indice + 1 (porque el indice empieza en 0) y al final convierte todo eso en una enumeracion
 

@@ -24,7 +24,7 @@ namespace WA_ControlPresupuesto.Services
             connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-       
+
         public async Task<bool> Existe(string nombre, int usuarioId)
         {
             using var connection = new SqlConnection(connectionString);

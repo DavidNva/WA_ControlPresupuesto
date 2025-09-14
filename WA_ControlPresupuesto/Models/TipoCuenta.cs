@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using WA_ControlPresupuesto.Validations;
 
 namespace WA_ControlPresupuesto.Models
@@ -10,13 +9,13 @@ namespace WA_ControlPresupuesto.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "El campo {0} es requerido")]
-        [Display(Name ="Nombre del tipo cuenta")]
+        [Display(Name = "Nombre del tipo cuenta")]
         [PrimeraLetraMayusculas]
-        [Remote(action: "VerificarExisteTipoCuenta", controller:"TiposCuentas")]//Esto nos sirve para hacer una validacion remota, es decir, que se haga una llamada al servidor para validar si el valor ya existe en la base de datos, esto sin necesidad de hacer un postback, es decir, sin necesidad de recargar la pagina
+        [Remote(action: "VerificarExisteTipoCuenta", controller: "TiposCuentas")]//Esto nos sirve para hacer una validacion remota, es decir, que se haga una llamada al servidor para validar si el valor ya existe en la base de datos, esto sin necesidad de hacer un postback, es decir, sin necesidad de recargar la pagina
         //funcion antes de guardar, se hace una llamada ajax al servidor para validar si el valor ya existe en la base de datos, entonces el usuario no necesita espera a pulsar el boton de guardar para saber si el valor ya existe, desde que lo pone, le diremos si ya existe o no
         public string Nombre { get; set; }
         public int UsuarioId { get; set; }
-        public int Orden {  get; set; }
+        public int Orden { get; set; }
 
 
 

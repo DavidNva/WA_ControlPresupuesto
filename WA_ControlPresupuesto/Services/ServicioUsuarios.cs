@@ -5,7 +5,7 @@
         int ObtenerUsuarioId();
     }
 
-    public class ServicioUsuarios: IServicioUsuarios
+    public class ServicioUsuarios : IServicioUsuarios
     {
         public int ObtenerUsuarioId()
         {
