@@ -106,7 +106,7 @@ namespace WA_ControlPresupuesto.Controllers
                 //No encontrado es la vista que hicimos en HomeController y el Home es el controlador
             }
             return View(tipoCuenta);
-        }//Este metodo es usado para mostrar la vista de confirmacion de borrado, aunque parezca que no hace nada, si hace, porque busca el tipo de cuenta a borrar y si no lo encuentra redirige a la vista de no encontrado
+        }//Este metodo es usado para mostrar la vista de confirmacion de borrado, aunque parezca que no hace nada, si hace, porque busca el tipo de cuenta a borrar y si no lo encuentra redirige a la vista de no encontrado.
 
         [HttpPost]
         public async Task<IActionResult> BorrarTipoCuenta(int id)

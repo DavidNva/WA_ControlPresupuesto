@@ -18,6 +18,7 @@
         <select asp-for="TipoOperacionId" class="form-select" asp-items="Html.GetEnumSelectList<TipoOperacion>()">
         </select>
         <span asp-validation-for="TipoOperacionId" class="text-danger"></span>
+        
     </div>
     <button type="submit" class="btn btn-primary">Crear</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>

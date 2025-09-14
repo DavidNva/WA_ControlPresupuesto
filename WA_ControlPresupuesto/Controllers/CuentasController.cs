@@ -11,7 +11,7 @@ namespace WA_ControlPresupuesto.Controllers
         private readonly IRepositorioTiposCuentas _repositorioTiposCuentas;
         private readonly IServicioUsuarios _servicioUsuarios;
         private readonly IRepositorioCuentas _repositorioCuentas;
-        private readonly IMapper _mapper;//Por convencion el name deberia ser _mapper, porque es un campo privado , pero en los ejemplos de automapper lo ponen asi, sin el _. 
+        private readonly IMapper _mapper;//Por convencion el name deberia ser _mapper, porque es un campo privado , pero en los ejemplos de automapper lo ponen asi, sin el _.
 
         public CuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas, IMapper mapper)
         {
