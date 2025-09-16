@@ -11,11 +11,12 @@ namespace WA_ControlPresupuesto.Controllers
         private readonly IRepositorioCuentas _repositorioCuentas;
         private readonly IRepositorioCategorias _repositorioCategorias;
         private readonly IServicioUsuarios _servicioUsuarios;
-        public TransaccionesController(IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas, IRepositorioCategorias repositorioCategorias )
+        public TransaccionesController(IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas, IRepositorioCategorias repositorioCategorias, IRepositorioTransacciones repositorioTransacciones )
         {
             _servicioUsuarios = servicioUsuarios;
             _repositorioCuentas = repositorioCuentas;
             _repositorioCategorias = repositorioCategorias;
+            _repositorioTransacciones = repositorioTransacciones;
         }
 
         public async Task<IActionResult> Crear()
@@ -27,6 +28,36 @@ namespace WA_ControlPresupuesto.Controllers
             return View(modelo);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Crear(TransaccionCreacionViewModel modelo)
+        {
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            if (!ModelState.IsValid)
+            {
+                modelo.Cuentas = await ObtenerCuentas(usuarioId);
+                modelo.Categorias = await ObtenerCategorias(usuarioId, modelo.TipoOperacionId);
+                return View(modelo);
+            }
+            var cuenta = await _repositorioCuentas.ObtenerPorId(modelo.CuentaId, usuarioId);
+            if(cuenta is null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var categoria = await _repositorioCategorias.ObtenerPorId(modelo.CategoriaId, usuarioId);
+            if(categoria is null)//Con esto estamos validando que la categoria que se esta intentando usar para crear la transaccion, realmente exista y pertenezca al usuario que esta intentando crear la transaccion.
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            modelo.UsuarioId = usuarioId;
+            if(modelo.TipoOperacionId == TipoOperacion.Gasto)
+            {
+                modelo.Monto = modelo.Monto * -1;//Lo hacemos asi porque el monto en la base de datos se guarda como negativo para los gastos y positivo para los ingresos.
+            }
+            await _repositorioTransacciones.Crear(modelo);
+
+            return RedirectToAction("Index");
+        }
 
         private async Task<IEnumerable<SelectListItem>> ObtenerCuentas(int usuarioId)
         {
