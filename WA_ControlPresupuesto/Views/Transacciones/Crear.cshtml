@@ -1,0 +1,69 @@
+﻿@model TransaccionCreacionViewModel
+@{
+    ViewData["Title"] = "Crear Transacción";
+}
+<h1>@ViewData["Title"]</h1>
+<h5>Una transacción te permite indicar tus ingresos y gastos</h5>
+
+<form asp-action="Crear">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group mb-3">
+        <label asp-for="FechaTransaccion" class="form-label"></label>
+        <input asp-for="FechaTransaccion" class="form-control" />
+        <span asp-validation-for="FechaTransaccion" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="CuentaId" class="form-label>"></label>
+        <select asp-for="CuentaId" class="form-select" asp-items="Model.Cuentas"></select>
+        <span asp-validation-for="CuentaId" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="TipoOperacionId" class="form-label>"></label>
+        <select asp-for="TipoOperacionId" class="form-select" asp-items="Html.GetEnumSelectList<TipoOperacion>()"></select>
+        <span asp-validation-for="TipoOperacionId" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="CategoriaId" class="form-label>"></label>
+        <select asp-for="CategoriaId" class="form-select" asp-items="Model.Categorias"></select>
+        <span asp-validation-for="CategoriaId" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Monto" class="form-label"></label>
+        <input asp-for="Monto" class="form-control" />
+        <span asp-validation-for="Monto" class="text-danger"></span>
+    </div>
+    <div class="form-group mb-3">
+        <label asp-for="Nota" class="form-label"></label>
+        <textarea asp-for="Nota" class="form-control"></textarea>
+        <span asp-validation-for="Nota" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+ @*    lo de submit es para enviar el formulario, por default si no ponemos eso es submit, es decir ya sea que especifiquemos
+    que el tipo de boton es submit o no, por default lo es *@
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const urlObtenerCategorias = '@Url.Action("ObtenerCategorias", "Transacciones")';
+        $(function(){
+            $("#TipoOperacionId").change(async function(){
+                const valorSeleccionadoTipoOperacionId = $(this).val();
+
+                const respuesta = await fetch(urlObtenerCategorias,{
+                    method: 'POST',
+                    body: valorSeleccionadoTipoOperacionId,
+                    headers: {
+                        'Content-Type': 'application/json'//
+                    }
+                });
+
+                const json = await respuesta.json();
+                const opciones = json.map(categoria => `<option value=${categoria.value}>${categoria.text}</option>`);
+                $("#CategoriaId").html(opciones);
+            })
+        });
+    </script>
+}
+

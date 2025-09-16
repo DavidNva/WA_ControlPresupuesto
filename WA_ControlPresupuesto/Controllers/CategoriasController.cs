@@ -14,7 +14,7 @@ namespace WA_ControlPresupuesto.Controllers
             _repositorioCategorias = repositorioCategorias;
             _servicioUsuarios = servicioUsuarios;
         }
-
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
@@ -41,6 +41,7 @@ namespace WA_ControlPresupuesto.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
         public async Task<IActionResult> Editar(int id)//Esto es lo que aparece al entrar a la vista de editar, que es el formulario con los datos de la categoria
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
@@ -95,5 +96,6 @@ namespace WA_ControlPresupuesto.Controllers
             await _repositorioCategorias.Borrar(id);
             return RedirectToAction("Index");
         }
+      
     }
 }

@@ -10,6 +10,7 @@ namespace WA_ControlPresupuesto.Services
         Task Borrar(int id);
         Task Crear(Categoria categoria);
         Task<IEnumerable<Categoria>> Obtener(int usuarioId);
+        Task<IEnumerable<Categoria>> Obtener(int usuarioId, TipoOperacion tipoOperacionId);
         Task<Categoria> ObtenerPorId(int id, int usuarioId);
     }
 
@@ -39,6 +40,16 @@ namespace WA_ControlPresupuesto.Services
                                         WHERE UsuarioId = @UsuarioId
                                         ORDER BY Nombre", new { usuarioId });//El new { usuarioId } es un objeto anonimo que se usa para pasar parametros a la consulta. Es decir, es como si hicieramos new { UsuarioId = usuarioId }, pero en C# si el nombre de la propiedad es igual al nombre de la variable, podemos omitirlo.
         }
+
+        public async Task<IEnumerable<Categoria>> Obtener(int usuarioId, TipoOperacion tipoOperacionId)
+        {
+            using var connection = new SqlConnection(connectionString);
+            return await connection.QueryAsync<Categoria>(@"
+                                        SELECT * FROM Categorias
+                                        WHERE UsuarioId = @UsuarioId AND TipoOperacionId = @tipoOperacionId
+                                        ORDER BY Nombre", new { usuarioId, tipoOperacionId });//El new { usuarioId } es un objeto anonimo que se usa para pasar parametros a la consulta. Es decir, es como si hicieramos new { UsuarioId = usuarioId }, pero en C# si el nombre de la propiedad es igual al nombre de la variable, podemos omitirlo.
+        }
+
 
         public async Task<Categoria> ObtenerPorId(int id, int usuarioId)
         {
