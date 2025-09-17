@@ -77,5 +77,35 @@ BEGIN
 	@CategoriaId = @CategoriaId, CuentaId = @CuentaId, Nota = @Nota
 	WHERE Id = @Id
 
-	SELECT SCOPE_IDENTITY();
+END
+
+
+go
+
+CREATE PROCEDURE [dbo].[sp_Transacciones_Eliminar]
+	@Id int
+AS
+BEGIN
+	SET NOCOUNT ON;
+	DECLARE @Monto decimal(18,2)
+	DECLARE @CuentaId int;
+	DECLARE @TipoOperacionId int;
+
+	SELECT @Monto = t.Monto, @CuentaId = t.CuentaId, @TipoOperacionId = c.TipoOperacionId FROM Transacciones t INNER JOIN Categorias c ON c.Id = t.CategoriaId
+	WHERE t.Id = @Id
+
+	DECLARE @FactorMultiplicativo int = 1;
+	IF(@TipoOperacionId =2) --si el tipo operacion es un gasto
+		SET @FactorMultiplicativo = -1
+
+	SET @Monto = @Monto * @FactorMultiplicativo --SI ES UN GASTO SERÁ NEGATIVO
+	--Revertir transacción anterior
+	UPDATE Cuentas 
+	SET Balance -= @Monto
+	WHERE Id = @CuentaId
+
+	--Realizar nueva transacción
+	DELETE Transacciones
+	WHERE Id = @Id
+
 END

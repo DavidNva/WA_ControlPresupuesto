@@ -7,6 +7,7 @@ namespace WA_ControlPresupuesto.Services
     public interface IRepositorioTransacciones
     {
         Task Actualizar(Transaccion transaccion, decimal montoAnterior, int cuentaIdAnterior);
+        Task Borrar(int id);
         Task Crear(Transaccion transaccion);
         Task<Transaccion> ObtenerPorId(int id, int usuarioId);
     }
@@ -62,6 +63,13 @@ namespace WA_ControlPresupuesto.Services
                    montoAnterior,
                    cuentaAnteriorId
                }, commandType: System.Data.CommandType.StoredProcedure);
+        }
+
+        public async Task Borrar(int id)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.ExecuteAsync("sp_Transacciones_Eliminar", new { id },
+                commandType: System.Data.CommandType.StoredProcedure);
         }
     }
 }

@@ -131,13 +131,26 @@ namespace WA_ControlPresupuesto.Controllers
                 return RedirectToAction("NoEncontrado", "Home");
             }
             var transaccion = _mapper.Map<Transaccion>(modelo);
-            
+
             if (modelo.TipoOperacionId == TipoOperacion.Gasto)
             {
                 transaccion.Monto = modelo.Monto * -1;//Lo hacemos asi porque el monto en la base de datos se guarda como negativo para los gastos y positivo para los ingresos.
             }
             await _repositorioTransacciones.Actualizar(transaccion, modelo.MontoAnterior, modelo.CuentaAnteriorId);
 
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Borrar(int id)
+        {
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            var transaccion = await _repositorioTransacciones.ObtenerPorId(id, usuarioId);
+            if (transaccion is null)
+            {//Validamos que la transaccion que se esta intentando borrar, realmente exista y pertenezca al usuario que esta intentando borrarla.
+                return RedirectToAction("NoEncontrado", "Home");
+            }
+            await _repositorioTransacciones.Borrar(id);
             return RedirectToAction("Index");
         }
     }
