@@ -9,6 +9,7 @@ namespace WA_ControlPresupuesto.Services
         Task Actualizar(Transaccion transaccion, decimal montoAnterior, int cuentaIdAnterior);
         Task Borrar(int id);
         Task Crear(Transaccion transaccion);
+        Task<IEnumerable<Transaccion>> ObtenerPorCuentaId(ObtenerTransaccionesPorCuenta modelo);
         Task<Transaccion> ObtenerPorId(int id, int usuarioId);
     }
     public class RepositorioTransacciones : IRepositorioTransacciones
@@ -71,5 +72,22 @@ namespace WA_ControlPresupuesto.Services
             await connection.ExecuteAsync("sp_Transacciones_Eliminar", new { id },
                 commandType: System.Data.CommandType.StoredProcedure);
         }
+
+        #region recuperar transacciones
+        public async Task<IEnumerable<Transaccion>> ObtenerPorCuentaId(ObtenerTransaccionesPorCuenta modelo)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryAsync<Transaccion>(@"
+                SELECT t.Id,t.Monto, t.FechaTransaccion, c.Nombre as Categoria, 
+                cu.Nombre as Cuenta, c.TipoOperacionId 
+                FROM Transacciones t 
+                INNER JOIN Categorias c ON c.Id = t.CategoriaId
+                INNER JOIN Cuentas cu ON cu.Id = t.CuentaId
+                WHERE t.CuentaId = @CuentaId AND t.UsuarioId = @UsuarioId
+                AND FechaTransaccion BETWEEN @FechaInicio AND @FechaFin 
+                ORDER BY t.FechaTransaccion DESC", modelo);
+            //Modelo ya tiene  las propiedades que necesita la consulta, por eso se puede mandar asi directamente
+        }
+        #endregion
     }
 }

@@ -16,7 +16,7 @@ namespace WA_ControlPresupuesto.Models
         public int CategoriaId { get; set; }
 
         [StringLength(1000, ErrorMessage = "La nota no puede tener más de {1} caracteres")]
-        public string Nota { get; set; }
+        public string? Nota { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar una cuenta")]
         [Display(Name = "Cuenta")]
@@ -24,5 +24,8 @@ namespace WA_ControlPresupuesto.Models
 
         [Display(Name = "Tipo de Operación")]
         public TipoOperacion TipoOperacionId { get; set; } = TipoOperacion.Ingreso;
+
+        public string? Cuenta { get; set; }//Se usa en el metodo ObtenerPorCuentaId de RepositorioTransacciones
+        public string? Categoria { get; set; }
     }
 }
