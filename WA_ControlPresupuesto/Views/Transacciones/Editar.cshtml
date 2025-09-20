@@ -1,6 +1,7 @@
 ﻿@model TransaccionActualizacionViewModel
 @{
     ViewData["Title"] = "Editar Transacción";
+    var linkCancelar = Model.UrlRetorno ?? Url.Action("Index", "Transacciones");
 }
 <h1>@ViewData["Title"]</h1>
 <h5>Una transacción te permite indicar tus ingresos y gastos</h5>
@@ -8,6 +9,7 @@
 <form asp-action="Editar">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="UrlRetorno" />
     <input type="hidden" asp-for="CuentaAnteriorId" />
     <input type="hidden" asp-for="MontoAnterior" />
     <div class="form-group mb-3">
@@ -42,7 +44,7 @@
     </div>
     <button type="submit" class="btn btn-primary">Editar</button>
     <button type="submit" class="btn btn-danger" asp-action="Borrar">Eliminar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    <a href="@linkCancelar" class="btn btn-secondary">Cancelar</a>
     @*    lo de submit es para enviar el formulario, por default si no ponemos eso es submit, es decir ya sea que especifiquemos
     que el tipo de boton es submit o no, por default lo es *@
 </form>

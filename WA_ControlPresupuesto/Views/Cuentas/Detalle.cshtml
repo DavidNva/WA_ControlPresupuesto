@@ -52,7 +52,7 @@ else
         <tbody>
             @foreach (var transaccionAgrupada in Model.TransaccionesAgrupadas)
             {
-                <tr style="background-color: lightblue; font-size: 26px">
+                <tr style="background-color: lightblue!important; font-size: 26px">
                     <td colspan="3">
                         @transaccionAgrupada.FechaTransaccion.Day 
                         <span class="badge bg-success">
@@ -67,7 +67,7 @@ else
                     <tr style="vertical-align: middle">
                         <td>
                             <a asp-controller="transacciones" asp-action="Editar"
-                            asp-route-id="@transaccion.Id">
+                            asp-route-id="@transaccion.Id" asp-route-UrlRetorno="@ViewBag.UrlRetorno">
                                 <i class="bi-pencil-fill"></i>
                             </a>
                         </td>

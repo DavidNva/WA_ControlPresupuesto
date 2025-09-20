@@ -207,7 +207,7 @@ namespace WA_ControlPresupuesto.Controllers
 
             ViewBag.mesPosterior = fechaInicio.AddMonths(1).Month;//Ese 1 es para que me de el mes siguiente
             ViewBag.anioPosterior = fechaInicio.AddMonths(1).Year;//Ese 1 es para que me de el mes siguiente
-
+            ViewBag.UrlRetorno = HttpContext.Request.Path + HttpContext.Request.QueryString;//Con esto lo que estamos haciendo es obtener la url completa de la pagina actual, incluyendo los parametros de consulta, para poder usarla como url de retorno en la vista Detalle.cshtml
             return View(modelo);
         }
     }

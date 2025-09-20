@@ -89,7 +89,7 @@ namespace WA_ControlPresupuesto.Controllers
          //Creamos a parte el metodo ObtenerCategorias para no repetir codigo, ya que lo necesitamos en el metodo Crear y en este metodo
 
         [HttpGet]
-        public async Task<IActionResult> Editar(int id)
+        public async Task<IActionResult> Editar(int id, string urlRetorno = null)
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
             var transaccion = await _repositorioTransacciones.ObtenerPorId(id, usuarioId);
@@ -106,6 +106,7 @@ namespace WA_ControlPresupuesto.Controllers
             modelo.CuentaAnteriorId = transaccion.CuentaId;
             modelo.Categorias = await ObtenerCategorias(usuarioId, transaccion.TipoOperacionId);
             modelo.Cuentas = await ObtenerCuentas(usuarioId);
+            modelo.UrlRetorno = urlRetorno;
             return View(modelo);
 
         }
@@ -137,21 +138,38 @@ namespace WA_ControlPresupuesto.Controllers
                 transaccion.Monto = modelo.Monto * -1;//Lo hacemos asi porque el monto en la base de datos se guarda como negativo para los gastos y positivo para los ingresos.
             }
             await _repositorioTransacciones.Actualizar(transaccion, modelo.MontoAnterior, modelo.CuentaAnteriorId);
-
-            return RedirectToAction("Index");
+            if(string.IsNullOrEmpty(modelo.UrlRetorno))
+            {
+                return RedirectToAction("Index");//Si la url de retorno es nula o vacia, redirigimos al index de transacciones, es decir estamos actualizando desde el index de transacciones
+            }
+            else
+            {
+                return LocalRedirect(modelo.UrlRetorno);//Con LocalRedirect nos aseguramos que la url de retorno sea una url local y no una url externa, para evitar ataques de redireccionamiento abierto.
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> Borrar(int id)
+        public async Task<IActionResult> Borrar(int id, string urlRetorno = null)
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
             var transaccion = await _repositorioTransacciones.ObtenerPorId(id, usuarioId);
+
             if (transaccion is null)
             {//Validamos que la transaccion que se esta intentando borrar, realmente exista y pertenezca al usuario que esta intentando borrarla.
                 return RedirectToAction("NoEncontrado", "Home");
             }
             await _repositorioTransacciones.Borrar(id);
-            return RedirectToAction("Index");
+           if(string.IsNullOrEmpty(urlRetorno))
+            {
+                return RedirectToAction("Index");//Si la url de retorno es nula o vacia, redirigimos al index de transacciones, es decir estamos borrando desde el index de transacciones
+            }
+            else
+            {
+                return LocalRedirect(urlRetorno);//Con LocalRedirect nos aseguramos que la url de retorno sea una url local y no una url externa, para evitar ataques de redireccionamiento abierto.
+            }
+
+           //segun lo que hemos hecho, tanto para editar, borrar y el de cancelar con el link reference en la vista, al commit de github lo podemos llamar de la siguiente forma: 
+
         }
     }
 }
