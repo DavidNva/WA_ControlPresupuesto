@@ -1,0 +1,30 @@
+﻿@model ResumenMontosViewModel
+
+<div class="contenedor-totales  mb-3">
+    <div>
+        <div>
+            <p class="fw-bold">Depositos</p>
+        </div>
+        <div class="activo">
+            @Model.Ingresos.ToString("N")
+            @* esa c que ponemos en el to string significa: currency, lo que hace es formatear el numero como moneda, ejemplo: $1,000.00
+            ahora si ponemos la letra N esto siginifica number, lo que hace es formatear el numero como numero, ejemplo: 1,000.00*@
+        </div>
+    </div>
+    <div>
+        <div>
+            <p class="fw-bold">Retiros</p>
+        </div>
+        <div class="pasivo">
+            @Model.Gastos.ToString("C")
+        </div>
+    </div>
+    <div>
+        <div>
+            <p class="fw-bold">Total</p>
+        </div>
+        <div>
+            @Model.Total.ToString("C")
+        </div>
+    </div>
+</div>

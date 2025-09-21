@@ -13,8 +13,12 @@
         {
             public DateTime FechaTransaccion { get; set; }
             public IEnumerable<Transaccion> Transacciones { get; set; }
-            public decimal BalanceDepositos => Transacciones.Where(t => t.TipoOperacionId == TipoOperacion.Ingreso).Sum(t => t.Monto);//Lo que hace es sumar todos los ingresos de las transacciones de ese dia, si no hay ingresos devuelve 0. Estamos usando expresiones lambda, y LINQ
-            public decimal BalanceRetiros => Transacciones.Where(t => t.TipoOperacionId == TipoOperacion.Gasto).Sum(t => t.Monto);//Aqui en lugar de ingresos, son gastos
+            public decimal BalanceDepositos => 
+                Transacciones.Where(t => t.TipoOperacionId == TipoOperacion.Ingreso)
+                .Sum(t => t.Monto);//Lo que hace es sumar todos los ingresos de las transacciones de ese dia, si no hay ingresos devuelve 0. Estamos usando expresiones lambda, y LINQ
+            public decimal BalanceRetiros => 
+                Transacciones.Where(t => t.TipoOperacionId == TipoOperacion.Gasto)
+                .Sum(t => t.Monto);//Aqui en lugar de ingresos, son gastos
         }
         
     }

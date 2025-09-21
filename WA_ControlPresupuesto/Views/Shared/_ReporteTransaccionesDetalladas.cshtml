@@ -1,41 +1,14 @@
 ﻿@model ReporteTransaccionesDetalladas
-
-<h4>
-    <a asp-route-mes="@ViewBag.mesAnterior" asp-route-anio="@ViewBag.anioAnterior"
-       class="btn btn-secondary"><i class="bi-chevron-left"></i></a>
-    @Model.FechaInicio.ToString("MMM")- @Model.FechaInicio.Year
-    <a asp-route-mes="@ViewBag.mesPosterior" asp-route-anio="@ViewBag.anioPosterior"
-       class="btn btn-secondary"><i class="bi-chevron-right"></i></a>
-</h4>
-
-<div class="contenedor-totales  mb-3">
-    <div>
-        <div>
-            <p class="fw-bold">Depositos</p>
-        </div>
-        <div class="activo">
-            @Model.BalanceDepositos.ToString("N")
-            @* esa c que ponemos en el to string significa: currency, lo que hace es formatear el numero como moneda, ejemplo: $1,000.00
-            ahora si ponemos la letra N esto siginifica number, lo que hace es formatear el numero como numero, ejemplo: 1,000.00*@
-        </div>
-    </div>
-    <div>
-        <div>
-            <p class="fw-bold">Retiros</p>
-        </div>
-        <div class="pasivo">
-            @Model.BalanceRetiros.ToString("C")
-        </div>
-    </div>
-    <div>
-        <div>
-            <p class="fw-bold">Total</p>
-        </div>
-        <div>
-            @Model.Total.ToString("C")
-        </div>
-    </div>
-</div>
+@{
+    var resumenMontos = new ResumenMontosViewModel
+    {
+        Ingresos = Model.BalanceDepositos,
+        Gastos = Model.BalanceRetiros,
+        Total = Model.Total
+    };
+}
+<partial name="_NavegarPorMeses" model="@Model.FechaInicio" />
+<partial name="_ResumenMontos" model="@resumenMontos" />
 
 @if (Model.TransaccionesAgrupadas.Count() == 0)
 {
@@ -75,8 +48,8 @@ else
                                                                                <td class="pasivo">
                             @(transaccion.TipoOperacionId == TipoOperacion.Gasto ?
                                             transaccion.Monto.ToString("C") : null)
-            </td>
-        </tr>
+                        </td>
+                    </tr>
                 }
             }
         </tbody>

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Threading.Tasks;
 using WA_ControlPresupuesto.Models;
 using WA_ControlPresupuesto.Services;
 
@@ -31,9 +32,61 @@ namespace WA_ControlPresupuesto.Controllers
             return View(modelo);
         }
 
-        public IActionResult Semanal()
+        public async Task<IActionResult> Semanal(int mes, int anio)
         {
-            return View();
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            IEnumerable<ResultadoObtenerPorSemana> transaccionesporSemana = await servicioReportes.ObtenerReporteSemanal(usuarioId, mes, anio, ViewBag);
+
+            var agrupado = transaccionesporSemana.GroupBy(x => x.Semana).Select(g => new ResultadoObtenerPorSemana
+            {
+                Semana = g.Key,//Puede ser 1,2,3,4 o 5 dependiendo del mes
+                Ingresos = g.Where(x => x.TipoOperacionId == TipoOperacion.Ingreso).
+                Select(x=>x.Monto).FirstOrDefault(),//De esta forma tenemos el ingreso total de la semana
+                Gastos = g.Where(x => x.TipoOperacionId == TipoOperacion.Gasto).
+                Select(x=>x.Monto).FirstOrDefault(),//Tenemos el gasto total de la semana
+            }).ToList();//Con esto estamos agrupando las transacciones por semana y sumando los ingresos y gastos de cada semana
+
+            if(anio == 0 || mes == 0)
+            {
+                var hoy = DateTime.Today;
+                anio = hoy.Year;
+                mes = hoy.Month;
+            }
+
+            var fechaReferencia = new DateTime(anio, mes, 1);
+            var diasDelMes = Enumerable.Range(1, fechaReferencia.AddMonths(1).AddDays(-1).Day);//Con esto obtenemos todos los dias del mes, por ejemplo, si es enero, obtenemos del 1 al 31, pero si fuese febrero, obtenemos del 1 al 28 o 29 dependiendo si es bisiesto o no
+
+            var diasSegmentados = diasDelMes.Chunk(7).ToList();//Con esto estamos dividiendo los dias del mes en semanas, es decir, si el mes tiene 31 dias, obtenemos 5 arrays, los primeros 4 con 7 dias y el ultimo con 3 dias
+
+            for(int i = 0; i < diasSegmentados.Count; i++)
+            {
+                var semana = i + 1;//La semana puede ser 1,2,3,4 o 5 dependiendo del mes
+                var fechaInicio = new DateTime(anio, mes, diasSegmentados[i].First());//Obtenemos la fecha de inicio de la semana
+                var fechaFin = new DateTime(anio, mes, diasSegmentados[i].Last());//Obtenemos la fecha de fin de la semana
+
+                var grupoSemana = agrupado.FirstOrDefault(x => x.Semana == semana);
+                if(grupoSemana is null)
+                {
+                    agrupado.Add(new ResultadoObtenerPorSemana
+                    {
+                        Semana = semana,
+                        FechaInicio = fechaInicio,
+                        FechaFin = fechaFin
+                    });
+                }
+                else
+                {//Si ya existe el grupo de la semana, solo actualizamos la fecha de inicio y fin
+                    grupoSemana.FechaInicio = fechaInicio;
+                    grupoSemana.FechaFin = fechaFin;
+                }
+            }
+
+            agrupado = agrupado.OrderByDescending(x=>x.Semana).ToList();//Ordenamos las semanas de mayor a menor, es decir, la semana 5 primero y la semana 1 al final
+
+            var modelo = new ReportesSemanalViewModel();
+            modelo.TransaccionesPorSemana = agrupado;
+            modelo.FechaReferencia = fechaReferencia;
+            return View(modelo);
         }
 
         public IActionResult Mensual()
