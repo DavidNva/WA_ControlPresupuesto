@@ -13,14 +13,16 @@ namespace WA_ControlPresupuesto.Controllers
         private readonly IRepositorioCuentas _repositorioCuentas;
         private readonly IMapper _mapper;//Por convencion el name deberia ser _mapper, porque es un campo privado , pero en los ejemplos de automapper lo ponen asi, sin el _.
         private readonly IRepositorioTransacciones _repositorioTransacciones;
+        private readonly IServicioReportes _servicioReportes;
 
-        public CuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas, IMapper mapper, IRepositorioTransacciones repositorioTransacciones)
+        public CuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas, IMapper mapper, IRepositorioTransacciones repositorioTransacciones, IServicioReportes servicioReportes)
         {
             _repositorioTiposCuentas = repositorioTiposCuentas;
             _servicioUsuarios = servicioUsuarios;
             _repositorioCuentas = repositorioCuentas;
             _mapper = mapper;//No necesitamos poner el this porque no hay ambiguedad entre el campo y el parametro del constructor
             _repositorioTransacciones = repositorioTransacciones;
+            _servicioReportes = servicioReportes;
         }
 
         public async Task<IActionResult> Index()
@@ -162,53 +164,16 @@ namespace WA_ControlPresupuesto.Controllers
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
             var cuenta = await _repositorioCuentas.ObtenerPorId(id, usuarioId);
+
             if (cuenta is null)
             {
                 return RedirectToAction("NoEncontrado", "Home");
             }
 
-            DateTime fechaInicio;
-            DateTime fechaFin;
-            if (mes <= 0 || mes > 12 || anio <= 1900)
-            {
-                var hoy = DateTime.Today;
-                fechaInicio = new DateTime(hoy.Year, hoy.Month, 1);
-                //Es decir, lo que estamos haciendo es obtener el primer dia del mes actual
-            }
-            else
-            {
-                fechaInicio = new DateTime(anio, mes, 1);//Primer dia del mes y anio especificado
-            }
-            fechaFin = fechaInicio.AddMonths(1).AddDays(-1);//Ultimo dia del mes especificado
-
-            var ObtenerTransaccionesPorCuenta = new ObtenerTransaccionesPorCuenta()
-            {
-                CuentaId = id,
-                UsuarioId = usuarioId,
-                FechaInicio = fechaInicio,
-                FechaFin = fechaFin
-            };//Es lo que vamos a mandar al repositorio para que nos devuelva las transacciones de esa cuenta en ese rango de fechas
-            var transacciones = await _repositorioTransacciones.ObtenerPorCuentaId(ObtenerTransaccionesPorCuenta);
-            var modelo = new ReporteTransaccionesDetalladas();
             ViewBag.Cuenta = cuenta.Nombre;
-            var transaccionesPorFecha = transacciones.OrderByDescending(x => x.FechaTransaccion)
-                .GroupBy(x => x.FechaTransaccion)
-                .Select(grupo=> new ReporteTransaccionesDetalladas.TransaccionesPorFecha()
-                {
-                    FechaTransaccion = grupo.Key,
-                    Transacciones = grupo.AsEnumerable()
-                }).ToList();//Aqui lo que estamos haciendo es agrupar las transacciones por fecha, para que en la vista se muestren agrupadas por fecha, ejemplo: 01/01/2024, 02/01/2024, etc
 
-            modelo.TransaccionesAgrupadas = transaccionesPorFecha;
-            modelo.FechaInicio = fechaInicio;
-            modelo.FechaFin = fechaFin;
+            var modelo = await _servicioReportes.ObtenerReporteTransaccionesDetalladasPorCuenta(usuarioId, id, mes, anio, ViewBag);
 
-            ViewBag.mesAnterior = fechaInicio.AddMonths(-1).Month;//Ese -1 es para que me de el mes anterior, ejemplo hoy es 20/09/2025, entonces si le resto un mes, me da 20/08/2025, y de ahi le saco el mes, que es 8
-            ViewBag.anioAnterior = fechaInicio.AddMonths(-1).Year;//Ese -1 es para que me de el mes anterior, ejemplo hoy es 20/09/2025, entonces si le resto un mes, me da 20/08/2025, y de ahi le saco el anio, que es 2025
-
-            ViewBag.mesPosterior = fechaInicio.AddMonths(1).Month;//Ese 1 es para que me de el mes siguiente
-            ViewBag.anioPosterior = fechaInicio.AddMonths(1).Year;//Ese 1 es para que me de el mes siguiente
-            ViewBag.UrlRetorno = HttpContext.Request.Path + HttpContext.Request.QueryString;//Con esto lo que estamos haciendo es obtener la url completa de la pagina actual, incluyendo los parametros de consulta, para poder usarla como url de retorno en la vista Detalle.cshtml
             return View(modelo);
         }
     }
