@@ -1,0 +1,84 @@
+﻿@model ReporteTransaccionesDetalladas
+
+<h4>
+    <a asp-route-mes="@ViewBag.mesAnterior" asp-route-anio="@ViewBag.anioAnterior"
+       class="btn btn-secondary"><i class="bi-chevron-left"></i></a>
+    @Model.FechaInicio.ToString("MMM")- @Model.FechaInicio.Year
+    <a asp-route-mes="@ViewBag.mesPosterior" asp-route-anio="@ViewBag.anioPosterior"
+       class="btn btn-secondary"><i class="bi-chevron-right"></i></a>
+</h4>
+
+<div class="contenedor-totales  mb-3">
+    <div>
+        <div>
+            <p class="fw-bold">Depositos</p>
+        </div>
+        <div class="activo">
+            @Model.BalanceDepositos.ToString("N")
+            @* esa c que ponemos en el to string significa: currency, lo que hace es formatear el numero como moneda, ejemplo: $1,000.00
+            ahora si ponemos la letra N esto siginifica number, lo que hace es formatear el numero como numero, ejemplo: 1,000.00*@
+        </div>
+    </div>
+    <div>
+        <div>
+            <p class="fw-bold">Retiros</p>
+        </div>
+        <div class="pasivo">
+            @Model.BalanceRetiros.ToString("C")
+        </div>
+    </div>
+    <div>
+        <div>
+            <p class="fw-bold">Total</p>
+        </div>
+        <div>
+            @Model.Total.ToString("C")
+        </div>
+    </div>
+</div>
+
+@if (Model.TransaccionesAgrupadas.Count() == 0)
+{
+    <h5>No hay datos para mostrar</h5>
+}
+else
+{
+    <table class="table">
+        <tbody>
+            @foreach (var transaccionAgrupada in Model.TransaccionesAgrupadas)
+            {
+                <tr style="background-color: lightblue!important; font-size: 26px">
+                    <td colspan="3">
+                        @transaccionAgrupada.FechaTransaccion.Day
+                        <span class="badge bg-success">
+                            @transaccionAgrupada.FechaTransaccion.ToString("ddd")
+                        </span>
+                    </td>
+                    <td class="activo">@transaccionAgrupada.BalanceDepositos.ToString("C")</td>
+                    <td class="activo">@transaccionAgrupada.BalanceRetiros.ToString("C")</td>
+                </tr>
+                @foreach (var transaccion in transaccionAgrupada.Transacciones)
+                {
+                    <tr style="vertical-align: middle">
+                        <td>
+                            <a asp-controller="transacciones" asp-action="Editar"
+                               asp-route-id="@transaccion.Id" asp-route-UrlRetorno="@ViewBag.UrlRetorno">
+                                <i class="bi-pencil-fill"></i>
+                            </a>
+                        </td>
+                        <td>@transaccion.Categoria</td>
+                        <td>@transaccion.Cuenta</td>
+                        <td class="activo">
+                            @(transaccion.TipoOperacionId == TipoOperacion.Ingreso ?
+                                            transaccion.Monto.ToString("C") : null)
+                                                                               </td>
+                                                                               <td class="pasivo">
+                            @(transaccion.TipoOperacionId == TipoOperacion.Gasto ?
+                                            transaccion.Monto.ToString("C") : null)
+            </td>
+        </tr>
+                }
+            }
+        </tbody>
+    </table>
+}

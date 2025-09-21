@@ -32,8 +32,8 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Transacciones}/{action=Index}/{id?}")
+    .WithStaticAssets();//Lo que en .net framework era o estaba en la carpeta App_Start, en .net core va en Program.cs
 
 
 app.Run();

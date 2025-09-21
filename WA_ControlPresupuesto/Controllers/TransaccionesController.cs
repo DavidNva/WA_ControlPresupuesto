@@ -22,9 +22,52 @@ namespace WA_ControlPresupuesto.Controllers
             _mapper = mapper;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index(int mes, int anio)
         {
-            return View();
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            DateTime fechaInicio;
+            DateTime fechaFin;
+            if (mes <= 0 || mes > 12 || anio <= 1900)
+            {
+                var hoy = DateTime.Today;
+                fechaInicio = new DateTime(hoy.Year, hoy.Month, 1);
+                //Es decir, lo que estamos haciendo es obtener el primer dia del mes actual
+            }
+            else
+            {
+                fechaInicio = new DateTime(anio, mes, 1);//Primer dia del mes y anio especificado
+            }
+            fechaFin = fechaInicio.AddMonths(1).AddDays(-1);//Ultimo dia del mes especificado
+
+            var paremetro = new ParametroObtenerTransacionesPorUsuario()
+            {
+                UsuarioId = usuarioId,
+                FechaInicio = fechaInicio,
+                FechaFin = fechaFin
+            };
+
+            var transacciones = await _repositorioTransacciones.ObtenerPorUsuarioId(paremetro);
+            var modelo = new ReporteTransaccionesDetalladas();
+            
+            var transaccionesPorFecha = transacciones.OrderByDescending(x => x.FechaTransaccion)
+                .GroupBy(x => x.FechaTransaccion)
+                .Select(grupo => new ReporteTransaccionesDetalladas.TransaccionesPorFecha()
+                {
+                    FechaTransaccion = grupo.Key,
+                    Transacciones = grupo.AsEnumerable()
+                }).ToList();//Aqui lo que estamos haciendo es agrupar las transacciones por fecha, para que en la vista se muestren agrupadas por fecha, ejemplo: 01/01/2024, 02/01/2024, etc
+
+            modelo.TransaccionesAgrupadas = transaccionesPorFecha;
+            modelo.FechaInicio = fechaInicio;
+            modelo.FechaFin = fechaFin;
+
+            ViewBag.mesAnterior = fechaInicio.AddMonths(-1).Month;//Ese -1 es para que me de el mes anterior, ejemplo hoy es 20/09/2025, entonces si le resto un mes, me da 20/08/2025, y de ahi le saco el mes, que es 8
+            ViewBag.anioAnterior = fechaInicio.AddMonths(-1).Year;//Ese -1 es para que me de el mes anterior, ejemplo hoy es 20/09/2025, entonces si le resto un mes, me da 20/08/2025, y de ahi le saco el anio, que es 2025
+
+            ViewBag.mesPosterior = fechaInicio.AddMonths(1).Month;//Ese 1 es para que me de el mes siguiente
+            ViewBag.anioPosterior = fechaInicio.AddMonths(1).Year;//Ese 1 es para que me de el mes siguiente
+            ViewBag.UrlRetorno = HttpContext.Request.Path + HttpContext.Request.QueryString;
+            return View(modelo);
         }
 
         public async Task<IActionResult> Crear()
@@ -168,8 +211,7 @@ namespace WA_ControlPresupuesto.Controllers
                 return LocalRedirect(urlRetorno);//Con LocalRedirect nos aseguramos que la url de retorno sea una url local y no una url externa, para evitar ataques de redireccionamiento abierto.
             }
 
-           //segun lo que hemos hecho, tanto para editar, borrar y el de cancelar con el link reference en la vista, al commit de github lo podemos llamar de la siguiente forma: 
-
+            //segun lo que hemos hecho, tanto para editar, borrar y el de cancelar con el link reference en la vista, al commit de github lo podemos llamar de la siguiente forma: "Implementación de edición, borrado y retorno seguro en TransaccionesController" con su descripcion: "Se ha añadido la funcionalidad para editar y borrar transacciones, así como manejar retornos seguros a URLs locales para mejorar la navegación del usuario." 
         }
     }
 }

@@ -166,6 +166,7 @@ namespace WA_ControlPresupuesto.Controllers
             {
                 return RedirectToAction("NoEncontrado", "Home");
             }
+
             DateTime fechaInicio;
             DateTime fechaFin;
             if (mes <= 0 || mes > 12 || anio <= 1900)
