@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using WA_ControlPresupuesto.Models;
 using WA_ControlPresupuesto.Services;
@@ -89,9 +90,48 @@ namespace WA_ControlPresupuesto.Controllers
             return View(modelo);
         }
 
-        public IActionResult Mensual()
-        {
-            return View();
+        public async Task<IActionResult> Mensual(int anio)
+        {//Poruqe es Task IActionResult y no solo IActionResult? Porque vamos a hacer una llamada asincrona
+            //es decir , vamos a llamar a un metodo que devuelve una tarea, en este caso, ObtenerPorMes, que es un metodo asincrono y devuelve una tarea que contiene una lista de ResultadoObtenerPorMes
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            if (anio == 0)
+            {
+                var hoy = DateTime.Today;
+                anio = hoy.Year;
+            }
+            var transaccionesporMes = await _repositorioTransacciones.ObtenerPorMes(usuarioId, anio);
+            var transaccionesAgrupadas = transaccionesporMes.GroupBy(x=> x.Mes)
+                .Select(x => new ResultadoObtenerPorMes
+                {
+                    Mes = x.Key,
+                    Ingreso = x.Where(y => y.TipoOperacionId == TipoOperacion.Ingreso)
+                                .Select(y => y.Monto).FirstOrDefault(),
+                    Gasto = x.Where(y => y.TipoOperacionId == TipoOperacion.Gasto)
+                                .Select(y => y.Monto).FirstOrDefault()
+                }).ToList();
+
+            for (int mes = 1; mes <= 12; mes++)
+            {
+                var transaccion = transaccionesAgrupadas.FirstOrDefault(x => x.Mes == mes);
+                var referencia = new DateTime(anio, mes, 1);
+                if (transaccion is null)
+                {
+                    transaccionesAgrupadas.Add(new ResultadoObtenerPorMes
+                    {
+                        Mes = mes,
+                        FechaReferencia = referencia
+                    });//Si no existe la transaccion, la agregamos con el mes y la fecha de referencia para que en la vista se muestre el mes
+                }
+                else
+                {
+                    transaccion.FechaReferencia = referencia;//Si ya existe la transaccion, solo actualizamos la fecha de referencia
+                }
+            }
+            transaccionesAgrupadas = transaccionesAgrupadas.OrderByDescending(x => x.Mes).ToList();
+            var modelo = new ReporteMensualViewModel();
+            modelo.Anio = anio;
+            modelo.TransaccionesPorMes = transaccionesAgrupadas;
+            return View(modelo);
         }
 
         public IActionResult ExcelReporte()

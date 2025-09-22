@@ -11,6 +11,7 @@ namespace WA_ControlPresupuesto.Services
         Task Crear(Transaccion transaccion);
         Task<IEnumerable<Transaccion>> ObtenerPorCuentaId(ObtenerTransaccionesPorCuenta modelo);
         Task<Transaccion> ObtenerPorId(int id, int usuarioId);
+        Task<IEnumerable<ResultadoObtenerPorMes>> ObtenerPorMes(int usuarioId, int anio);
         Task<IEnumerable<ResultadoObtenerPorSemana>> ObtenerPorSemana(ParametroObtenerTransacionesPorUsuario modelo);
         Task<IEnumerable<Transaccion>> ObtenerPorUsuarioId(ParametroObtenerTransacionesPorUsuario modelo);
     }
@@ -118,6 +119,24 @@ namespace WA_ControlPresupuesto.Services
                 WHERE t.UsuarioId = @usuarioId AND t.FechaTransaccion BETWEEN @fechaInicio AND @fechaFin
                 GROUP BY DATEDIFF(D,@fechaInicio, FechaTransaccion)/7, c.TipoOperacionId", modelo);
         }
+
+
+        public async Task<IEnumerable<ResultadoObtenerPorMes>> ObtenerPorMes(int usuarioId, int anio)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            return await connection.QueryAsync<ResultadoObtenerPorMes>(@"
+                SELECT MONTH(t.FechaTransaccion) as Mes, 
+                SUM(t.Monto) as Monto, c.TipoOperacionId
+                FROM Transacciones t
+                INNER JOIN Categorias c
+                ON c.Id = t.CategoriaId
+                WHERE t.UsuarioId = @usuarioId AND YEAR(t.FechaTransaccion) = @Anio
+                GROUP BY MONTH(t.FechaTransaccion), c.TipoOperacionId
+                ORDER BY MONTH(t.FechaTransaccion) DESC", new { usuarioId, anio });
+        }
+
+
+
 
         //Porque algunos metodos son async y otros no?
         //Esto ocurreo porque los metodos que realizan operaciones de E/S (Entrada/Salida) como acceder a bases de datos o servicios web son inherentemente asincronos. 

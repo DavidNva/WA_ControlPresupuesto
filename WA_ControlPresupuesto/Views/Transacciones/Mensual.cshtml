@@ -1,5 +1,51 @@
-﻿@{
+﻿@model ReporteMensualViewModel
+@{
     ViewBag.Title = "Reporte Mensual";
+    int anioAnterior = Model.Anio - 1;
+    int anioSiguiente = Model.Anio + 1;//Esto lo hacemos por ejemplo: si estamos en 2023, el anterior es 2022 y el siguiente es 2024
+
+    var resumenMontos = new ResumenMontosViewModel()
+            {
+                Gastos = Model.Gastos,
+                Ingresos = Model.Ingresos,
+                Total = Model.Total
+            };
 }
 
 <partial name="_Submenu" Model="SubMenuTransacciones.Mensual" />
+
+<h4>
+    Mostrando transacciones de 
+    <a asp-route-anio="@anioAnterior" class="btn btn-secondary">
+        <i class="bi-chevron-left"></i>
+    </a>@Model.Anio
+    <a asp-route-anio="@anioSiguiente" class="btn btn-secondary">
+        <i class="bi-chevron-right"></i>
+    </a>
+</h4>
+
+<partial name="_ResumenMontos" model="resumenMontos" />
+
+<table class="table fs-5">
+    <thead>
+        <tr class="bg-light">
+            <th>Mes</th>
+            <th class="text-end">Ingresos</th>
+            <th class="text-end">Gastos</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach( var transaccionPorMes in Model.TransaccionesPorMes)
+        {
+            <tr>
+                <td>
+                    <a class="text-decoration-none" asp-action="Index" asp-route-anio="@Model.Anio" asp-route-mes="@transaccionPorMes.Mes">
+                        @transaccionPorMes.FechaReferencia.ToString("MMM")
+                    </a>
+                </td>
+                <td class="activo text-end"> @transaccionPorMes.Ingreso.ToString("C0")</td>
+                <td class="pasivo text-end"> @transaccionPorMes.Gasto.ToString("C0")</td>
+            </tr>
+        }
+    </tbody>
+</table>
