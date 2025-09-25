@@ -1,5 +1,40 @@
 ﻿@{
     ViewBag.Title = "Reporte Excel";
+    var hoy = DateTime.Today;
+    var haceUnMes = hoy.AddMonths(-1);
+    var mesActual = hoy.Month;
+    var anioActual = hoy.Year;
+    var mesAnterior = haceUnMes.Month;
+    var anioAnterior = haceUnMes.Year;
 }
 
 <partial name="_Submenu" Model="SubMenuTransacciones.Excel" />
+
+<h1>Exportar transacciones a Excel</h1>
+<div class="mb-3">
+    <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesActual" asp-route-anio="@anioActual"
+    class="btn btn-success">
+        Exportar mes actual
+    </a>~@hoy.ToString("MMMM yyyy") @* lo hacemos asi porque el formato MM-yyyy es el que espera la ruta, y usamos ~ para que no tome la ruta absoluta *@
+</div>
+
+<div class="mb-3">
+    <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesAnterior" asp-route-anio="@anioAnterior"
+    class="btn btn-success">
+        Exportar mes anterior
+    </a>~@haceUnMes.ToString("MMMM yyyy") @* lo hacemos asi porque el formato MM-yyyy es el que espera la ruta, y usamos ~ para que no tome la ruta absoluta *@
+</div>
+
+<div class="mb-3">
+    <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesActual" asp-route-anio="@anioActual"
+       class="btn btn-success">
+        Exportar año anterior
+    </a>~@hoy.ToString("MMMM yyyy") @* lo hacemos asi porque el formato MM-yyyy es el que espera la ruta, y usamos ~ para que no tome la ruta absoluta *@
+</div>
+
+<div class="mb-3">
+    <a asp-action="ExportarExcelPorMes" asp-route-mes="@mesActual" asp-route-anio="@anioActual"
+       class="btn btn-success">
+        Exportar todo
+    </a>
+</div>

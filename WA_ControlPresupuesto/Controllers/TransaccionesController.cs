@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 using WA_ControlPresupuesto.Models;
 using WA_ControlPresupuesto.Services;
@@ -137,6 +139,61 @@ namespace WA_ControlPresupuesto.Controllers
         public IActionResult ExcelReporte()
         {
             return View();
+        }
+
+        [HttpGet]
+        public async Task<FileResult> ExportarExcelPorMes(int mes, int anio)
+        {
+            var fechaInicio = new DateTime(anio, mes, 1);//Esto significa el primer dia del mes indicado en el parametro mes y anio
+            var fechaFin = fechaInicio.AddMonths(1).AddDays(-1);//El ultimo dia del mes
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+
+            var transacciones = await _repositorioTransacciones.ObtenerPorUsuarioId(
+                new ParametroObtenerTransacionesPorUsuario
+                {
+                    UsuarioId = usuarioId,
+                    FechaInicio = fechaInicio,
+                    FechaFin = fechaFin
+                });
+
+            var nombreArchivo = $"ManejoPresupuesto_{fechaInicio.ToString("MMM yyyy")}.xlsx";
+            return GenerarExcel(nombreArchivo, transacciones);
+        }
+
+        private FileResult GenerarExcel(string nombreArchivo, IEnumerable<Transaccion> transacciones)
+        {
+            //Usamos la libreria ClosedXML para generar el excel
+            //usaremos un datatable, que es como una representacion de una tabla en memoria
+            DataTable dataTable = new DataTable("Transacciones");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("FechaTransaccion"),
+                new DataColumn("Cuenta"),
+                new DataColumn("Categoria"),
+                new DataColumn("Nota"),
+                new DataColumn("Monto"),
+                new DataColumn("Ingreso/Gasto")
+            });//Definimos las columnas de la tabla
+            foreach (var transaccion in transacciones)
+            {
+                dataTable.Rows.Add(
+                    transaccion.FechaTransaccion,
+                    transaccion.Cuenta,
+                    transaccion.Categoria,
+                    transaccion.Nota,
+                    transaccion.Monto,
+                    transaccion.TipoOperacionId == TipoOperacion.Ingreso ? "Ingreso" : "Gasto"
+                );
+            }//Agregamos las filas a la tabla
+            using (XLWorkbook libro = new XLWorkbook())
+            {
+                libro.Worksheets.Add(dataTable);//Las hojas del excel. Agregamos la tabla al libro
+                using (MemoryStream stream = new MemoryStream())
+                {//Lo que estamos haciendo es crear un archivo en memoria, sin necesidad de guardarlo en el disco duro
+                    libro.SaveAs(stream);
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", nombreArchivo);//el to array es porque el metodo File necesita un arreglo de bytes
+                }//Devolevmos el archivo en memoria como un arreglo de bytes, con el tipo de contenido y el nombre del archivo
+            }
         }
 
         public IActionResult Calendario()

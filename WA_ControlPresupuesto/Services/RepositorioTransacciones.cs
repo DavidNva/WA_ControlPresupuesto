@@ -98,7 +98,7 @@ namespace WA_ControlPresupuesto.Services
             using var connection = new SqlConnection(_connectionString);
             return await connection.QueryAsync<Transaccion>(@"
                 SELECT t.Id,t.Monto, t.FechaTransaccion, c.Nombre as Categoria, 
-                cu.Nombre as Cuenta, c.TipoOperacionId 
+                cu.Nombre as Cuenta, c.TipoOperacionId, t.Nota
                 FROM Transacciones t 
                 INNER JOIN Categorias c ON c.Id = t.CategoriaId
                 INNER JOIN Cuentas cu ON cu.Id = t.CuentaId
