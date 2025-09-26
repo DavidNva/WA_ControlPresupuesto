@@ -3,3 +3,25 @@
 }
 
 <partial name="_Submenu" Model="SubMenuTransacciones.Calendario" />
+<div id="calendario"></div>
+
+@section Scripts{
+    <script src="~/lib/fullcalendar/main.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendario');
+            const calendario = new FullCalendar.Calendar(calendarEl, {
+                dayMaxEventRows: 3,
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: '/Transacciones/ObtenerEventosCalendario'
+            });
+            calendario.render();
+        });
+    </script>
+}
