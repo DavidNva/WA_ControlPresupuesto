@@ -1,9 +1,35 @@
 ﻿@{
     ViewBag.Title = "Reporte Calendario";
 }
-
 <partial name="_Submenu" Model="SubMenuTransacciones.Calendario" />
 <div id="calendario"></div>
+
+<div class="modal fade" id="modalTransacciones" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transacciones del día</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th id="modalTablaFecha" colspan="2"></th>
+                            <th id="modalTablaIngresos" class="activo"></th>
+                            <th id="modalTablaGastos" class="pasivo"></th>
+                           
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyTransaccionesModal"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts{
     <script src="~/lib/fullcalendar/main.min.js"></script>
@@ -19,7 +45,11 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-                events: '/Transacciones/ObtenerTransaccionesCalendario'
+                events: '/Transacciones/ObtenerTransaccionesCalendario',
+                dateClick: async function (info) {
+                    await buscarTransaccionesPorFecha(info.dateStr);
+                }
+
                 //Ejemplo de transaccion manualmente creadaa
                 // ,events: [
                 //     {
@@ -42,5 +72,69 @@
             });
             calendario.render();
         });
+
+        async function buscarTransaccionesPorFecha(fecha){
+            const response = await fetch(`/Transacciones/ObtenerTransaccionesPorFecha?fecha=${fecha}`,{
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }//Esto se hace porque el metodo GET no tiene body, entonces se pasan los parametros por la URL . Si no se hace asi, el metodo GET no recibe los parametros
+                //Si no ponemos esto, el metodo GET no recibe los parametros y no funciona
+                //Para entender porque si o si se debe poner te explico:
+                //Cuando se hace un metodo GET, el navegador automaticamente 
+                // le pone el header 'Content-Type': 'application/x-www-form-urlencoded' y no 'application/json'
+                // como en los demas metodos (POST, PUT, DELETE) que si tienen body
+                // y por lo tanto si tienen sentido que el Content-Type sea 'application/json', es decir que el body es un JSON
+                //para definirlo mejor, en los tipo POST, PUT, DELETE se usa el Content-Type 'application/json' porque el body es un JSON
+                //y en el GET no tiene body, entonces no tiene sentido que el Content-Type sea 'application/json' por eso es que el navegador le pone el header 'Content-Type': 'application/x-www-form-urlencoded'
+                //y ya no estaremos enviando un body sino parametros por la URLs
+                //es decir en los otros 3 se hace esto: body: content type = 'application/json' + body: JSON.stringify(objeto)
+                // y en el GET no se hace body: content type = 'application/x-www-form-urlencoded' + parametros por la URL
+                // y por eso es que si no ponemos el header 'Content-Type': 'application/json' en el GET, el metodo GET no recibe los parametros y no funciona
+                //es decir, get no necesita body, pero si necesita el header 'Content-Type': 'application/json'
+                //  para que el servidor entienda que le estamos enviando parametros por la URL
+
+            });
+
+            const json = await response.json();
+            let ingresos = 0;
+            let gastos = 0;
+            const tipoOperacionesIngresos = 1;
+            const formateador = new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'MXN'
+                //minimumFractionDigits: 2
+            });
+
+            const filas = json.map(transaccion =>{//aqui lo que estamos haciendo es mapear el json que recibimos del servidor, que es un array de transacciones, y por cada transaccion vamos a crear una fila de la tabla
+                ///y ademas vamos a ir sumando los ingresos y los gastos, 
+                // json.map sirve para transformar un array en otro array de la misma longitud, pero con los elementos transformados en este caso estamos transformando cada transaccion en una fila de la tabla
+                if(transaccion.tipoOperacionId === tipoOperacionesIngresos){
+                    ingresos += transaccion.monto;
+                } else {
+                    gastos += transaccion.monto;
+                }
+                return `<tr>
+                            <td>${transaccion.categoria}</td>
+                            <td>${transaccion.cuenta}</td>
+                            <td align="right" colspan="2"  
+                                class=${transaccion.tipoOperacionId === tipoOperacionesIngresos?
+                                'activo' : 'pasivo'}>
+                                ${formateador.format(transaccion.monto)}
+                            </td>
+                        </tr>`;
+                        //lo de formateador.format lo que hace es: le da formato de moneda MXN a el monto, por ejemplo:
+                        // 2500.5  lo convierte a $2,500.50. esta es una funcion de javascript, no es algo que yo haya creado, viene por defecto en javascript
+            })
+
+            $('#tbodyTransaccionesModal').html(filas);
+            $('#modalTablaFecha').html(`Transacciones del día ${fecha}`);
+            $('#modalTablaIngresos').html(`Ingresos: ${formateador.format(ingresos)}`);
+            $('#modalTablaGastos').html(`Gastos: ${formateador.format(gastos)}`);
+
+
+            const modalTransacciones = new bootstrap.Modal(document.getElementById('modalTransacciones'));
+            modalTransacciones.show();
+        }
     </script>
 }

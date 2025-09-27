@@ -258,6 +258,20 @@ namespace WA_ControlPresupuesto.Controllers
             return Json(eventosCalendario);
         }
 
+        public async Task<JsonResult> ObtenerTransaccionesPorFecha(DateTime fecha)//Para el dar clic
+        {
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+            var transacciones = await _repositorioTransacciones.ObtenerPorUsuarioId(
+                new ParametroObtenerTransacionesPorUsuario
+                {
+                    UsuarioId = usuarioId,
+                    FechaInicio = fecha,
+                    FechaFin = fecha
+                });
+            
+            return Json(transacciones);
+        }
+
         public async Task<IActionResult> Crear()
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();

@@ -11,16 +11,16 @@
 }
 
 .activo{
-    color:cadetblue;
+    color:cadetblue!important;
     font-weight: bold;
 }
 
 .pasivo {
-    color: red;
+    color: red!important;
     font-weight: bold;
 }
 
 .total {
-    color: green;
+    color: green!important;
     font-weight: bold;
 }
