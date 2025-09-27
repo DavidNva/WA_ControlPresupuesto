@@ -19,7 +19,26 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-                events: '/Transacciones/ObtenerEventosCalendario'
+                events: '/Transacciones/ObtenerTransaccionesCalendario'
+                //Ejemplo de transaccion manualmente creadaa
+                // ,events: [
+                //     {
+                //         title: '2,500',
+                //         start: '2025-09-26',
+                //         end: '2025-09-26'
+                //     },
+                //     {
+                //         title: '1, 500',
+                //         start: '2025-09-25',
+                //         allDay: true,
+                //         color:'red'
+                //     },
+                //     {
+                //         title: '1,300',
+                //         start: '2025-09-20T10:00:00',
+                //         end: '2025-09-20T12:00:00'
+                //     }
+                // ]
             });
             calendario.render();
         });

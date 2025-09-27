@@ -177,7 +177,6 @@ namespace WA_ControlPresupuesto.Controllers
             return GenerarExcel(nombreArchivo, transacciones);
         }
 
-
         [HttpGet]
         public async Task<FileResult> ExportarExcelTodo()
         {
@@ -237,6 +236,27 @@ namespace WA_ControlPresupuesto.Controllers
             return View();
         }
 
+        public async Task<JsonResult> ObtenerTransaccionesCalendario(DateTime start, DateTime end)
+        {//Aqui usamos JsonResult porque vamos a devolver un objeto json, que es lo que espera el calendario en la vista
+            var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
+           
+            var transacciones = await _repositorioTransacciones.ObtenerPorUsuarioId(
+                new ParametroObtenerTransacionesPorUsuario
+                {
+                    UsuarioId = usuarioId,
+                    FechaInicio = start,
+                    FechaFin = end
+                });
+
+            var eventosCalendario = transacciones.Select(t=>new EventoCalendario
+            {
+                Title = $"{t.Categoria}: {t.Monto}",
+                Start = t.FechaTransaccion.ToString("yyyy-MM-dd"),
+                End = t.FechaTransaccion.ToString("yyyy-MM-dd"),
+                Color = (t.TipoOperacionId == TipoOperacion.Gasto) ?"Red": null
+            });
+            return Json(eventosCalendario);
+        }
 
         public async Task<IActionResult> Crear()
         {
