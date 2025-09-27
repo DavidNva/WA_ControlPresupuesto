@@ -14,6 +14,8 @@ builder.Services.AddTransient<IRepositorioTransacciones, RepositorioTransaccione
 builder.Services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();//Para poder usar HttpContext en los servicios
 builder.Services.AddTransient<IServicioReportes, ServicioReportes>();
 builder.Services.AddAutoMapper(typeof(Program));
+
+// Agrega los servicios necesarios para manejar la identidad de los usuarios, como la autenticación y la autorización
 builder.Services.AddTransient<IRepositorioUsuarios, RepositorioUsuarios>();
 builder.Services.AddTransient<IUserStore<Usuario>, UsuarioStore>();
 builder.Services.AddIdentityCore<Usuario>(opciones =>
@@ -24,7 +26,7 @@ builder.Services.AddIdentityCore<Usuario>(opciones =>
     opciones.Password.RequireNonAlphanumeric = false;//Que no requiera caracteres especiales
     opciones.Password.RequiredLength = 6;//Que la contraseña tenga al menos 6 caracteres 
     //opciones.User.RequireUniqueEmail = true;
-});// Agrega los servicios necesarios para manejar la identidad de los usuarios, como la autenticación y la autorización
+}).AddErrorDescriber<MensajesDeErrorIdentity>();//Para personalizar los mensajes de error que se muestran al usuario, en este caso los pasamos a español
 
 
 //Esto no funciona builder.Services.AddAutoMapper(typeof(Program).Assembly); porque Program no es una clase, es un archivo.  Por lo tanto, hay que crear una clase vacia para que funcione
