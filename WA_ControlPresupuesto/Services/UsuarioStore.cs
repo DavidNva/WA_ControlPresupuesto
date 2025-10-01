@@ -37,7 +37,7 @@ namespace WA_ControlPresupuesto.Services
         public async Task<Usuario?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
             return await _repositorioUsuario.ObtenerUsuarioPorEmail(normalizedEmail);
-        }
+        }//Esto es para buscar un usuario por su email normalizado. El email normalizado es el email en mayúsculas para evitar problemas de mayúsculas y minúsculas., nos sirve para el login o para buscar un usuario por su email, es decir si el usuario se registra con un email en minúsculas, pero luego intenta iniciar sesión con el mismo email en mayúsculas, el sistema lo reconocerá como el mismo usuario. o para evitar duplicados en la base de datos cuando se registran nuevos usuarios.
 
         public Task<Usuario?> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {

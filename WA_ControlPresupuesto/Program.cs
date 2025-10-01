@@ -18,6 +18,7 @@ builder.Services.AddAutoMapper(typeof(Program));
 // Agrega los servicios necesarios para manejar la identidad de los usuarios, como la autenticación y la autorización
 builder.Services.AddTransient<IRepositorioUsuarios, RepositorioUsuarios>();
 builder.Services.AddTransient<IUserStore<Usuario>, UsuarioStore>();
+builder.Services.AddTransient<SignInManager<Usuario>>();
 builder.Services.AddIdentityCore<Usuario>(opciones =>
 { //Configuración de las opciones de identidad
     opciones.Password.RequireDigit = false;
@@ -28,6 +29,12 @@ builder.Services.AddIdentityCore<Usuario>(opciones =>
     //opciones.User.RequireUniqueEmail = true;
 }).AddErrorDescriber<MensajesDeErrorIdentity>();//Para personalizar los mensajes de error que se muestran al usuario, en este caso los pasamos a español
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignOutScheme = IdentityConstants.ApplicationScheme;
+}).AddCookie(IdentityConstants.ApplicationScheme);//Con esto estamos configurando las cookies para que la aplicacion para autenticacion
 
 //Esto no funciona builder.Services.AddAutoMapper(typeof(Program).Assembly); porque Program no es una clase, es un archivo.  Por lo tanto, hay que crear una clase vacia para que funcione
 //Transient porque no comparte codigo entre distintas instancias del mismo servicio
@@ -43,7 +50,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();

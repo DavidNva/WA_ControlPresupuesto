@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WA_ControlPresupuesto.Models;
 
@@ -7,10 +8,12 @@ namespace WA_ControlPresupuesto.Controllers
     public class UsuariosController : Controller
     {
         private readonly UserManager<Usuario> _userManager;
+        private readonly SignInManager<Usuario> _signInManager;
 
-        public UsuariosController(UserManager<Usuario> userManager)
+        public UsuariosController(UserManager<Usuario> userManager, SignInManager<Usuario> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public IActionResult Registro()
@@ -37,13 +40,15 @@ namespace WA_ControlPresupuesto.Controllers
                 }
                 return View(modelo);
             }
-
+            await _signInManager.SignInAsync(usuario, isPersistent: true);//Esto sirve para
             return RedirectToAction("Index", "Transacciones");
         }
 
-        public IActionResult Index()
+        [HttpPost]
+        public async Task<IActionResult> Logout()
         {
-            return View();
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            return RedirectToAction("Index", "Transacciones");
         }
     }
 }
