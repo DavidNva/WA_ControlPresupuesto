@@ -109,3 +109,38 @@ BEGIN
 	WHERE Id = @Id
 
 END
+
+go
+
+
+CREATE PROCEDURE [dbo].[sp_CrearDatosUsuarioNuevo]--valores por default para que el usuario al entrar tenga valores por seleccionar o consumir
+	@UsuarioId INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	
+	--INSERTAR TIPOS CUENTAS
+	DECLARE @Efectivo nvarchar(50) = 'Efectivo'
+	DECLARE @CuentasDeBanco nvarchar(50) = 'Cuentas de Banco)'
+	DECLARE @Tarjetas nvarchar(50) = 'Tarjetas';
+
+	INSERT INTO TiposCuentas(Nombre, UsuarioId, Orden)
+	VALUES(@Efectivo, @UsuarioId, 1),
+	(@CuentasDeBanco, @UsuarioId, 2),
+	(@Tarjetas, @UsuarioId, 3)
+
+	INSERT INTO Cuentas (Nombre, Balance, TipoCuentaId)
+	SELECT Nombre, 0, Id 
+	FROM TiposCuentas
+	WHERE UsuarioId = @UsuarioId;
+
+
+	INSERT INTO Categorias (Nombre, TipoOperacionId, UsuarioId)
+	VALUES
+	('Libros', 2, @UsuarioId),
+	('Salario', 1, @UsuarioId),
+	('Aguinaldo', 1, @UsuarioId),
+	('Comida', 2, @UsuarioId),
+	('Entretenimiento', 2, @UsuarioId)
+
+END
