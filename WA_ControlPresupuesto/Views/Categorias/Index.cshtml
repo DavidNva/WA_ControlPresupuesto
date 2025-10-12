@@ -1,12 +1,15 @@
-﻿@model IEnumerable<Categoria>
+﻿@model PaginacionRespuesta<Categoria>
 @{
     ViewData["Title"] = "Categorias";
 }
 <h1>@ViewData["Title"]</h1>
-<h5>La categoria nos permite indicar en qué gastamso nuestro dinero, 
+<h5>La categoria nos permite indicar en qué gastamos nuestro dinero, 
     también, de dónde provienen nuestros ingresos.
 </h5>
+<h2>Cantidad de categorías: @Model.CantidadTotalRecords -  Cantidad de Páginas @Model.CantidadTotalPaginas</h2>
 <a asp-action="Crear" class="btn btn-primary mb-3">Crear Nuevo</a>
+
+<partial name="_Paginacion" />
 <table class="table table-striped">
     <thead>
         <tr>
@@ -16,7 +19,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var categoria in Model)
+        @foreach (var categoria in Model.Elementos)
         {
             <tr>
                 <td>@categoria.Nombre</td>

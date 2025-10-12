@@ -15,11 +15,23 @@ namespace WA_ControlPresupuesto.Controllers
             _servicioUsuarios = servicioUsuarios;
         }
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(PaginacionViewModel paginacionViewModel)
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
-            var categorias = await _repositorioCategorias.Obtener(usuarioId);
-            return View(categorias);
+            var categorias = await _repositorioCategorias.Obtener(usuarioId, paginacionViewModel);
+
+            var totalCategorias = await _repositorioCategorias.Contar(usuarioId);
+            var respuestaViewModel = new PaginacionRespuesta<Categoria>
+            {
+                Elementos = categorias,
+                Pagina = paginacionViewModel.Pagina,
+                RecordsPorPagina = paginacionViewModel.RecordsPorPagina,
+                CantidadTotalRecords = totalCategorias,
+                BaseUrl = "/categorias"//Obtiene la URL del endpoint actual, es decir /Categorias/Index
+                //BaseUrl = Url.Action()//Obtiene la URL del endpoint actual, es decir /Categorias/Index
+            };
+
+            return View(respuestaViewModel);
         }
 
         [HttpGet]

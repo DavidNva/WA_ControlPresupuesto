@@ -8,8 +8,9 @@ namespace WA_ControlPresupuesto.Services
     {
         Task Actualizar(Categoria categoria);
         Task Borrar(int id);
+        Task<int> Contar(int usuarioId);
         Task Crear(Categoria categoria);
-        Task<IEnumerable<Categoria>> Obtener(int usuarioId);
+        Task<IEnumerable<Categoria>> Obtener(int usuarioId, PaginacionViewModel paginacion);
         Task<IEnumerable<Categoria>> Obtener(int usuarioId, TipoOperacion tipoOperacionId);
         Task<Categoria> ObtenerPorId(int id, int usuarioId);
     }
@@ -32,13 +33,23 @@ namespace WA_ControlPresupuesto.Services
             categoria.Id = id;
         }
 
-        public async Task<IEnumerable<Categoria>> Obtener(int usuarioId)
+        public async Task<IEnumerable<Categoria>> Obtener(int usuarioId, PaginacionViewModel paginacion)
         {
             using var connection = new SqlConnection(connectionString);
-            return await connection.QueryAsync<Categoria>(@"
+            return await connection.QueryAsync<Categoria>(@$"
                                         SELECT * FROM Categorias
                                         WHERE UsuarioId = @UsuarioId
-                                        ORDER BY Nombre", new { usuarioId });//El new { usuarioId } es un objeto anonimo que se usa para pasar parametros a la consulta. Es decir, es como si hicieramos new { UsuarioId = usuarioId }, pero en C# si el nombre de la propiedad es igual al nombre de la variable, podemos omitirlo.
+                                        ORDER BY Nombre
+                                        OFFSET {paginacion.RecordsASaltar} ROWS FETCH NEXT {paginacion.RecordsPorPagina} ROWS ONLY
+                                        ", new { usuarioId });//El new { usuarioId } es un objeto anonimo que se usa para pasar parametros a la consulta. Es decir, es como si hicieramos new { UsuarioId = usuarioId }, pero en C# si el nombre de la propiedad es igual al nombre de la variable, podemos omitirlo.
+        }
+
+        public async Task<int> Contar(int usuarioId)
+        {
+            using var connection = new SqlConnection(connectionString);
+            return await connection.ExecuteScalarAsync<int>(
+                "SELECT COUNT(*) FROM Categorias WHERE UsuarioId = @UsuarioId", new { usuarioId }
+                );
         }
 
         public async Task<IEnumerable<Categoria>> Obtener(int usuarioId, TipoOperacion tipoOperacionId)
