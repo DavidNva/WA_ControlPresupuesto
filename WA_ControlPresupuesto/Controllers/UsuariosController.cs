@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -17,12 +18,14 @@ namespace WA_ControlPresupuesto.Controllers
             _signInManager = signInManager;
         }
 
+        [AllowAnonymous]//Permite que usuarios no autenticados puedan acceder a este metodo
         public IActionResult Registro()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Registro(RegistroViewModel modelo)
         {
             if (!ModelState.IsValid)
@@ -45,6 +48,7 @@ namespace WA_ControlPresupuesto.Controllers
             return RedirectToAction("Index", "Transacciones");
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Login()
         {
@@ -52,6 +56,7 @@ namespace WA_ControlPresupuesto.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel modelo)
         {
             if (!ModelState.IsValid)

@@ -9,6 +9,7 @@ using WA_ControlPresupuesto.Services;
 
 namespace WA_ControlPresupuesto.Controllers
 {
+    [Authorize]//Con esto estamos diciendo que todas las acciones de este controlador requieren que el usuario este autenticado
     public class TransaccionesController : Controller
     {
         private readonly IRepositorioTransacciones _repositorioTransacciones;
@@ -27,7 +28,7 @@ namespace WA_ControlPresupuesto.Controllers
             this.servicioReportes = servicioReportes;
         }
 
-        [Authorize]
+        
         public async Task<IActionResult> Index(int mes, int anio)
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
