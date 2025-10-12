@@ -322,7 +322,13 @@ namespace WA_ControlPresupuesto.Controllers
         private async Task<IEnumerable<SelectListItem>> ObtenerCategorias(int usuarioId, TipoOperacion tipoOperacion)
         {
             var categorias = await _repositorioCategorias.Obtener(usuarioId, tipoOperacion);
-            return categorias.Select(categoria => new SelectListItem(categoria.Nombre, categoria.Id.ToString()));
+            var resultado =  categorias
+                .Select(x => new SelectListItem(x.Nombre, x.Id.ToString())).ToList();
+
+            var opcionPorDefecto = new SelectListItem("--Seleccione una categoria--", "0", true);
+            resultado.Insert(0, opcionPorDefecto);
+
+            return resultado;
         }//Hacemos primero esto, porque lo vamos a necesitar en el metodo Crear y en el metodo ObtenerCategorias. Lo separamos en un metodo aparte para no repetir codigo y porque en el metodo Crear no necesitamos devolver un IActionResult, sino solo un IEnumerable<SelectListItem>, ademas de que en el método de listar. Lo hacemos tipo IENumerable<SelectListItem> porque es lo que necesita el select en la vista. para mostrar usando asp-items
 
         [HttpPost]

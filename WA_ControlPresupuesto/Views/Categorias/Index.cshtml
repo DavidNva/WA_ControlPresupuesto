@@ -5,11 +5,23 @@
 <h1>@ViewData["Title"]</h1>
 <h5>La categoria nos permite indicar en qué gastamos nuestro dinero, 
     también, de dónde provienen nuestros ingresos.
-</h5>
-<h2>Cantidad de categorías: @Model.CantidadTotalRecords -  Cantidad de Páginas @Model.CantidadTotalPaginas</h2>
+</h5>@* 
+<h2>Cantidad de categorías: @Model.CantidadTotalRecords -  Cantidad de Páginas @Model.CantidadTotalPaginas</h2> *@
 <a asp-action="Crear" class="btn btn-primary mb-3">Crear Nuevo</a>
 
+<div class="row">
+    <label>Cantidad de Registros a mostrar:</label>
+    <div class="mb-3 col-auto">
+        <select asp-for="@Model.RecordsPorPagina" id="cantidadRecordsPorPagina" class="form-select">
+            <option>3</option>
+            <option>5</option>
+            <option>10</option>
+            <option>25</option>
+        </select>
+    </div>
+</div>
 <partial name="_Paginacion" />
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -35,3 +47,15 @@
          }
     </tbody>
 </table>
+@section Scripts {
+    <script>
+        $("#cantidadRecordsPorPagina").change(function(){
+            const recordsPorPagina = $(this).val();
+            location.href = `/categorias/?pagina=1&recordsPorPagina=${recordsPorPagina}`;
+        })
+        // const select = document.querySelector("#cantidadRecordsPorPagina");
+        // select.addEventListener("change", function () {
+        //     window.location = `?pagina=1&recordsPorPagina=${select.value}`;
+        // });
+    </script>
+}

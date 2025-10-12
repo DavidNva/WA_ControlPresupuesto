@@ -27,8 +27,9 @@ namespace WA_ControlPresupuesto.Controllers
                 Pagina = paginacionViewModel.Pagina,
                 RecordsPorPagina = paginacionViewModel.RecordsPorPagina,
                 CantidadTotalRecords = totalCategorias,
-                BaseUrl = "/categorias"//Obtiene la URL del endpoint actual, es decir /Categorias/Index
-                //BaseUrl = Url.Action()//Obtiene la URL del endpoint actual, es decir /Categorias/Index
+                //BaseUrl = "/categorias"//Obtiene la URL del endpoint actual, es decir /Categorias/Index
+                BaseUrl = Url.Action()//Obtiene la URL del endpoint actual, es decir /Categorias/Index
+                //Url helpers son métodos de extensión que nos permiten generar URLs para acciones, rutas, contenido estático, etc. Url.Action() genera una URL para una acción específica en un controlador.
             };
 
             return View(respuestaViewModel);

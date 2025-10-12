@@ -9,7 +9,7 @@ namespace WA_ControlPresupuesto.Services
         Task Actualizar(TipoCuenta tipoCuenta);
         Task Borrar(int id);
         Task Crear(TipoCuenta tipoCuenta);
-        Task<bool> Existe(string nombre, int usuarioId);
+        Task<bool> Existe(string nombre, int usuarioId, int id = 0);
         Task<IEnumerable<TipoCuenta>> Obtener(int usuarioId);
         Task<TipoCuenta> ObtenerPorId(int id, int usuarioId);
         Task Ordenar(IEnumerable<TipoCuenta> tiposCuentasOrdenados);
@@ -25,13 +25,14 @@ namespace WA_ControlPresupuesto.Services
         }
 
 
-        public async Task<bool> Existe(string nombre, int usuarioId)
+        public async Task<bool> Existe(string nombre, int usuarioId, int id = 0)
         {
             using var connection = new SqlConnection(connectionString);
             //traeme el primero o valor por defecto del tipo de dato colocado, (para int es 0)
             var existe = await connection.QueryFirstOrDefaultAsync<int>(@"SELECT 1 FROM TiposCuentas CUENTAS    
-                                            WHERE Nombre = @Nombre AND UsuarioId = @UsuarioId",
-                                            new { nombre, usuarioId });//Con dapper de esta forma indicamos que va en @Nombre y @UsuarioId
+                                            WHERE Nombre = @Nombre AND UsuarioId = @UsuarioId AND Id <> @id;",
+                                            new { nombre, usuarioId, id });//Con dapper de esta forma indicamos que va en @Nombre y @UsuarioId
+            //Estamos igual colocando un id diferente al que estamos editando, para que no nos diga que ya existe el nombre, ya que obviamente existira, pero es el mismo que estamos editando
 
             //Eso traerá 1 si existe un registro con esos datos o un 0 si no existe 
             return existe == 1;
