@@ -5,8 +5,8 @@
 <h1>Regístrate</h1>
 
 <div class="card">
-    <div class="card-body">
-        <form asp-action="Registro">
+    <div class="card-body px-5">
+        <form asp-action="Registro" class="p-3">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">
@@ -21,8 +21,8 @@
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <button class="btn-primary btn">Regístrate</button>@* 
-            <a class="btn btn-success" asp-action="login">Deseo Loguearme</a> *@
+            <button class="btn-primary btn">Regístrate</button>
+            <a class="btn btn-success" asp-action="login">Iniciar Sesión</a> 
 
         </form>
     </div>
