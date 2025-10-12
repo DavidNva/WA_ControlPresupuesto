@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
 using System.Data;
-using System.Threading.Tasks;
 using WA_ControlPresupuesto.Models;
 using WA_ControlPresupuesto.Services;
 
@@ -28,6 +27,7 @@ namespace WA_ControlPresupuesto.Controllers
             this.servicioReportes = servicioReportes;
         }
 
+        [Authorize]
         public async Task<IActionResult> Index(int mes, int anio)
         {
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
@@ -44,12 +44,12 @@ namespace WA_ControlPresupuesto.Controllers
             {
                 Semana = g.Key,//Puede ser 1,2,3,4 o 5 dependiendo del mes
                 Ingresos = g.Where(x => x.TipoOperacionId == TipoOperacion.Ingreso).
-                Select(x=>x.Monto).FirstOrDefault(),//De esta forma tenemos el ingreso total de la semana
+                Select(x => x.Monto).FirstOrDefault(),//De esta forma tenemos el ingreso total de la semana
                 Gastos = g.Where(x => x.TipoOperacionId == TipoOperacion.Gasto).
-                Select(x=>x.Monto).FirstOrDefault(),//Tenemos el gasto total de la semana
+                Select(x => x.Monto).FirstOrDefault(),//Tenemos el gasto total de la semana
             }).ToList();//Con esto estamos agrupando las transacciones por semana y sumando los ingresos y gastos de cada semana
 
-            if(anio == 0 || mes == 0)
+            if (anio == 0 || mes == 0)
             {
                 var hoy = DateTime.Today;
                 anio = hoy.Year;
@@ -61,14 +61,14 @@ namespace WA_ControlPresupuesto.Controllers
 
             var diasSegmentados = diasDelMes.Chunk(7).ToList();//Con esto estamos dividiendo los dias del mes en semanas, es decir, si el mes tiene 31 dias, obtenemos 5 arrays, los primeros 4 con 7 dias y el ultimo con 3 dias
 
-            for(int i = 0; i < diasSegmentados.Count; i++)
+            for (int i = 0; i < diasSegmentados.Count; i++)
             {
                 var semana = i + 1;//La semana puede ser 1,2,3,4 o 5 dependiendo del mes
                 var fechaInicio = new DateTime(anio, mes, diasSegmentados[i].First());//Obtenemos la fecha de inicio de la semana
                 var fechaFin = new DateTime(anio, mes, diasSegmentados[i].Last());//Obtenemos la fecha de fin de la semana
 
                 var grupoSemana = agrupado.FirstOrDefault(x => x.Semana == semana);
-                if(grupoSemana is null)
+                if (grupoSemana is null)
                 {
                     agrupado.Add(new ResultadoObtenerPorSemana
                     {
@@ -84,7 +84,7 @@ namespace WA_ControlPresupuesto.Controllers
                 }
             }
 
-            agrupado = agrupado.OrderByDescending(x=>x.Semana).ToList();//Ordenamos las semanas de mayor a menor, es decir, la semana 5 primero y la semana 1 al final
+            agrupado = agrupado.OrderByDescending(x => x.Semana).ToList();//Ordenamos las semanas de mayor a menor, es decir, la semana 5 primero y la semana 1 al final
 
             var modelo = new ReportesSemanalViewModel();
             modelo.TransaccionesPorSemana = agrupado;
@@ -102,7 +102,7 @@ namespace WA_ControlPresupuesto.Controllers
                 anio = hoy.Year;
             }
             var transaccionesporMes = await _repositorioTransacciones.ObtenerPorMes(usuarioId, anio);
-            var transaccionesAgrupadas = transaccionesporMes.GroupBy(x=> x.Mes)
+            var transaccionesAgrupadas = transaccionesporMes.GroupBy(x => x.Mes)
                 .Select(x => new ResultadoObtenerPorMes
                 {
                     Mes = x.Key,
@@ -239,7 +239,7 @@ namespace WA_ControlPresupuesto.Controllers
         public async Task<JsonResult> ObtenerTransaccionesCalendario(DateTime start, DateTime end)
         {//Aqui usamos JsonResult porque vamos a devolver un objeto json, que es lo que espera el calendario en la vista
             var usuarioId = _servicioUsuarios.ObtenerUsuarioId();
-           
+
             var transacciones = await _repositorioTransacciones.ObtenerPorUsuarioId(
                 new ParametroObtenerTransacionesPorUsuario
                 {
@@ -248,12 +248,12 @@ namespace WA_ControlPresupuesto.Controllers
                     FechaFin = end
                 });
 
-            var eventosCalendario = transacciones.Select(t=>new EventoCalendario
+            var eventosCalendario = transacciones.Select(t => new EventoCalendario
             {
                 Title = $"{t.Categoria}: {t.Monto}",
                 Start = t.FechaTransaccion.ToString("yyyy-MM-dd"),
                 End = t.FechaTransaccion.ToString("yyyy-MM-dd"),
-                Color = (t.TipoOperacionId == TipoOperacion.Gasto) ?"Red": null
+                Color = (t.TipoOperacionId == TipoOperacion.Gasto) ? "Red" : null
             });
             return Json(eventosCalendario);
         }
@@ -268,7 +268,7 @@ namespace WA_ControlPresupuesto.Controllers
                     FechaInicio = fecha,
                     FechaFin = fecha
                 });
-            
+
             return Json(transacciones);
         }
 
@@ -383,7 +383,7 @@ namespace WA_ControlPresupuesto.Controllers
                 transaccion.Monto = modelo.Monto * -1;//Lo hacemos asi porque el monto en la base de datos se guarda como negativo para los gastos y positivo para los ingresos.
             }
             await _repositorioTransacciones.Actualizar(transaccion, modelo.MontoAnterior, modelo.CuentaAnteriorId);
-            if(string.IsNullOrEmpty(modelo.UrlRetorno))
+            if (string.IsNullOrEmpty(modelo.UrlRetorno))
             {
                 return RedirectToAction("Index");//Si la url de retorno es nula o vacia, redirigimos al index de transacciones, es decir estamos actualizando desde el index de transacciones
             }
@@ -404,7 +404,7 @@ namespace WA_ControlPresupuesto.Controllers
                 return RedirectToAction("NoEncontrado", "Home");
             }
             await _repositorioTransacciones.Borrar(id);
-           if(string.IsNullOrEmpty(urlRetorno))
+            if (string.IsNullOrEmpty(urlRetorno))
             {
                 return RedirectToAction("Index");//Si la url de retorno es nula o vacia, redirigimos al index de transacciones, es decir estamos borrando desde el index de transacciones
             }
