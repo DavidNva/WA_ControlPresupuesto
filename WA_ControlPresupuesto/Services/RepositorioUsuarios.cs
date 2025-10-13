@@ -6,10 +6,11 @@ namespace WA_ControlPresupuesto.Services
 {
     public interface IRepositorioUsuarios
     {
+        Task ActualizarUsuario(Usuario usuario);
         Task<int> CrearUsuario(Usuario usuario);
         Task<Usuario?> ObtenerUsuarioPorEmail(string emailNormalizado);
     }
-    public class RepositorioUsuarios: IRepositorioUsuarios
+    public class RepositorioUsuarios : IRepositorioUsuarios
     {
         private readonly string connectionString;
         public RepositorioUsuarios(IConfiguration configuration)
@@ -17,7 +18,7 @@ namespace WA_ControlPresupuesto.Services
             connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<int>CrearUsuario(Usuario usuario)
+        public async Task<int> CrearUsuario(Usuario usuario)
         {
             using var connection = new SqlConnection(connectionString);
             var UsuarioId = await connection.QuerySingleAsync<int>(@"INSERT INTO Usuarios (Email, EmailNormalizado, PasswordHash)
@@ -36,5 +37,12 @@ namespace WA_ControlPresupuesto.Services
             //Porque colocamos Usuario? con el signo de interrogación, porque puede devolver null si no existe el usuario. 
         }
 
+        public async Task ActualizarUsuario(Usuario usuario)
+        {
+            using var connection = new SqlConnection(connectionString);
+            await connection.ExecuteAsync(@"UPDATE Usuarios SET
+                                            PasswordHash = @PasswordHash
+                                            WHERE Id = @Id", usuario);
+        }
     }
 }

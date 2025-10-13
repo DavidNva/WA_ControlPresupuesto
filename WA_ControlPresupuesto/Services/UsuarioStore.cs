@@ -1,27 +1,23 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using WA_ControlPresupuesto.Models;
+using WA_ControlPresupuesto.Services;
 
-namespace WA_ControlPresupuesto.Services
+namespace ManejoPresupuesto.Servicios
 {
-    public class UsuarioStore : IUserStore<Usuario>, IUserEmailStore<Usuario>, IUserPasswordStore<Usuario>
+    public class UsuarioStore : IUserStore<Usuario>, IUserEmailStore<Usuario>,
+        IUserPasswordStore<Usuario>
     {
-        private readonly IRepositorioUsuarios _repositorioUsuario;
+        private readonly IRepositorioUsuarios repositorioUsuarios;
 
-        //Esta interfaz es para definir los métodos que se van a utilizar para manejar los usuarios
-        //El primero: IUserStore<Usuario> es para manejar las operaciones básicas de un usuario (crear, eliminar, actualizar, buscar por id y nombre)
-        //El segundo: IUserEmailStore<Usuario> es para manejar las operaciones relacionadas con el email del usuario (obtener, establecer, confirmar, buscar por email)
-        //El tercero: IUserPasswordStore<Usuario> es para manejar las operaciones relacionadas con la contraseña del usuario (obtener, establecer, verificar si tiene contraseña)
-
-        public UsuarioStore(IRepositorioUsuarios repositorioUsuario)
+        public UsuarioStore(IRepositorioUsuarios repositorioUsuarios)
         {
-            _repositorioUsuario = repositorioUsuario;
+            this.repositorioUsuarios = repositorioUsuarios;
         }
-
 
         public async Task<IdentityResult> CreateAsync(Usuario user, CancellationToken cancellationToken)
         {
-            user.Id = _repositorioUsuario.CrearUsuario(user).Result;
-            return IdentityResult.Success;//Si se crea el usuario, devuelve éxito, si id no se crea, lanza una excepción, no devuelve null es decir, si user.id es 0 o null, lanza una excepción.
+            user.Id = await repositorioUsuarios.CrearUsuario(user);
+            return IdentityResult.Success;
         }
 
         public Task<IdentityResult> DeleteAsync(Usuario user, CancellationToken cancellationToken)
@@ -31,25 +27,24 @@ namespace WA_ControlPresupuesto.Services
 
         public void Dispose()
         {
-            //No hay recursos que liberar en este caso, pero es necesario implementar el método Dispose porque la interfaz lo requiere.
         }
 
-        public async Task<Usuario?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        public async Task<Usuario> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            return await _repositorioUsuario.ObtenerUsuarioPorEmail(normalizedEmail);
-        }//Esto es para buscar un usuario por su email normalizado. El email normalizado es el email en mayúsculas para evitar problemas de mayúsculas y minúsculas., nos sirve para el login o para buscar un usuario por su email, es decir si el usuario se registra con un email en minúsculas, pero luego intenta iniciar sesión con el mismo email en mayúsculas, el sistema lo reconocerá como el mismo usuario. o para evitar duplicados en la base de datos cuando se registran nuevos usuarios.
+            return await repositorioUsuarios.ObtenerUsuarioPorEmail(normalizedEmail);
+        }
 
-        public Task<Usuario?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public Task<Usuario> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Usuario?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<Usuario> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            return await _repositorioUsuario.ObtenerUsuarioPorEmail(normalizedUserName);
+            return await repositorioUsuarios.ObtenerUsuarioPorEmail(normalizedUserName);
         }
 
-        public Task<string?> GetEmailAsync(Usuario user, CancellationToken cancellationToken)
+        public Task<string> GetEmailAsync(Usuario user, CancellationToken cancellationToken)
         {
             return Task.FromResult(user.Email);
         }
@@ -59,27 +54,27 @@ namespace WA_ControlPresupuesto.Services
             throw new NotImplementedException();
         }
 
-        public Task<string?> GetNormalizedEmailAsync(Usuario user, CancellationToken cancellationToken)
+        public Task<string> GetNormalizedEmailAsync(Usuario user, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<string?> GetNormalizedUserNameAsync(Usuario user, CancellationToken cancellationToken)
+        public Task<string> GetNormalizedUserNameAsync(Usuario user, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<string?> GetPasswordHashAsync(Usuario user, CancellationToken cancellationToken)
+        public Task<string> GetPasswordHashAsync(Usuario user, CancellationToken cancellationToken)
         {
             return Task.FromResult(user.PasswordHash);
         }
 
         public Task<string> GetUserIdAsync(Usuario user, CancellationToken cancellationToken)
         {
-            return Task.FromResult(user.Id.ToString());//Convertimos el id a string porque el método devuelve un string
+            return Task.FromResult(user.Id.ToString());
         }
 
-        public Task<string?> GetUserNameAsync(Usuario user, CancellationToken cancellationToken)
+        public Task<string> GetUserNameAsync(Usuario user, CancellationToken cancellationToken)
         {
             return Task.FromResult(user.Email);
         }
@@ -89,7 +84,7 @@ namespace WA_ControlPresupuesto.Services
             throw new NotImplementedException();
         }
 
-        public Task SetEmailAsync(Usuario user, string? email, CancellationToken cancellationToken)
+        public Task SetEmailAsync(Usuario user, string email, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -99,31 +94,32 @@ namespace WA_ControlPresupuesto.Services
             throw new NotImplementedException();
         }
 
-        public Task SetNormalizedEmailAsync(Usuario user, string? normalizedEmail, CancellationToken cancellationToken)
+        public Task SetNormalizedEmailAsync(Usuario user, string normalizedEmail, CancellationToken cancellationToken)
         {
             user.EmailNormalizado = normalizedEmail;
-            return Task.CompletedTask;//No es necesario usar async/await porque no hay operaciones asíncronas aquí, simplemente asignamos el valor y devolvemos una tarea completada.
+            return Task.CompletedTask;
         }
 
-        public Task SetNormalizedUserNameAsync(Usuario user, string? normalizedName, CancellationToken cancellationToken)
+        public Task SetNormalizedUserNameAsync(Usuario user, string normalizedName, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
 
-        public Task SetPasswordHashAsync(Usuario user, string? passwordHash, CancellationToken cancellationToken)
+        public Task SetPasswordHashAsync(Usuario user, string passwordHash, CancellationToken cancellationToken)
         {
             user.PasswordHash = passwordHash;
-            return Task.CompletedTask;//No es necesario usar async/await porque no hay operaciones asíncronas aquí, simplemente asignamos el valor y devolvemos una tarea completada.
+            return Task.CompletedTask;
         }
 
-        public Task SetUserNameAsync(Usuario user, string? userName, CancellationToken cancellationToken)
+        public Task SetUserNameAsync(Usuario user, string userName, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IdentityResult> UpdateAsync(Usuario user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> UpdateAsync(Usuario user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await repositorioUsuarios.ActualizarUsuario(user);
+            return IdentityResult.Success;
         }
     }
 }

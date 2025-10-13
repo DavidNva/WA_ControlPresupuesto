@@ -1,3 +1,4 @@
+using ManejoPresupuesto.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -38,7 +39,8 @@ builder.Services.AddIdentityCore<Usuario>(opciones =>
     opciones.Password.RequireNonAlphanumeric = false;//Que no requiera caracteres especiales
     opciones.Password.RequiredLength = 6;//Que la contraseña tenga al menos 6 caracteres 
     //opciones.User.RequireUniqueEmail = true;
-}).AddErrorDescriber<MensajesDeErrorIdentity>();//Para personalizar los mensajes de error que se muestran al usuario, en este caso los pasamos a español
+}).AddErrorDescriber<MensajesDeErrorIdentity>()
+.AddDefaultTokenProviders();//Para personalizar los mensajes de error que se muestran al usuario, en este caso los pasamos a español
 
 builder.Services.AddAuthentication(options =>
 {
@@ -51,6 +53,7 @@ builder.Services.AddAuthentication(options =>
     //opciones.AccessDeniedPath = "/Usuarios/AccesoDenegado";
 });//Con esto estamos configurando las cookies para que la aplicacion para autenticacion
 
+builder.Services.AddTransient<IServicioEmail, ServicioEmail>();
 //Esto no funciona builder.Services.AddAutoMapper(typeof(Program).Assembly); porque Program no es una clase, es un archivo.  Por lo tanto, hay que crear una clase vacia para que funcione
 //Transient porque no comparte codigo entre distintas instancias del mismo servicio
 var app = builder.Build();
