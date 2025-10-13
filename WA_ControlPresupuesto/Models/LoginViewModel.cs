@@ -4,14 +4,15 @@ namespace WA_ControlPresupuesto.Models
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "El campo {0} es obligatorio")]
-        [EmailAddress(ErrorMessage = "El campo {0} debe ser un correo electrónico válido")]
+        [Required(ErrorMessage = "El campo {0} es requerido")]
+        [EmailAddress(ErrorMessage = "El campo debe ser un correo electrónico válido")]
         public string Email { get; set; }
-
-        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        [Required(ErrorMessage = "El campo {0} es requerido")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
+        [Display(Name = "Recuérdame")]
         public bool Recuerdame { get; set; }
+
     }
 }

@@ -30,18 +30,21 @@ namespace WA_ControlPresupuesto.Services
 
             cliente.Credentials = new NetworkCredential(email, password);
             var emisor = email;
-            var subject = "¿Ha olvidado su contraseña";
-            var contenidoHtml = $@"Saludos,
+            var tema = "¿Ha olvidado su contraseña?";
+
+            var contenidoHTML = $@"Saludos,
+
 Este mensaje le llega porque usted ha solicitado un cambio de contraseña. Si esta solicitud no fue hecha por usted, puede ignorar este mensaje.
-Para cambiar su contraseña, haga clic en el siguiente enlace: {enlace}
+
+Para cambiar su contraseña, haga click en el siguiente enlace:
+
+{enlace}
 
 Atentamente,
-
 Equipo Manejo Presupuesto";
 
-            var mensaje = new MailMessage(emisor, receptor, subject, contenidoHtml);
-            await cliente.SendMailAsync(mensaje);
-
+            var mensajeEmail = new MailMessage(emisor, receptor, tema, contenidoHTML);
+            await cliente.SendMailAsync(mensajeEmail);
         }
     }
 }

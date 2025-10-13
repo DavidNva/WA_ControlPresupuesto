@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,18 +12,19 @@ namespace WA_ControlPresupuesto.Controllers
 {
     public class UsuariosController : Controller
     {
-        private readonly UserManager<Usuario> _userManager;
-        private readonly SignInManager<Usuario> _signInManager;
-        private readonly IServicioEmail _servicioEmail;
+        private readonly UserManager<Usuario> userManager;
+        private readonly SignInManager<Usuario> signInManager;
+        private readonly IServicioEmail servicioEmail;
 
-        public UsuariosController(UserManager<Usuario> userManager, SignInManager<Usuario> signInManager, IServicioEmail servicioEmail)
+        public UsuariosController(UserManager<Usuario> userManager,
+            SignInManager<Usuario> signInManager, IServicioEmail servicioEmail)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _servicioEmail = servicioEmail;
+            this.userManager = userManager;
+            this.signInManager = signInManager;
+            this.servicioEmail = servicioEmail;
         }
 
-        [AllowAnonymous]//Permite que usuarios no autenticados puedan acceder a este metodo
+        [AllowAnonymous]
         public IActionResult Registro()
         {
             return View();
@@ -37,23 +39,29 @@ namespace WA_ControlPresupuesto.Controllers
                 return View(modelo);
             }
 
-            var usuario = new Usuario { Email = modelo.Email };
-            var resultado = await _userManager.CreateAsync(usuario, modelo.Password);
+            var usuario = new Usuario() { Email = modelo.Email };
 
-            if (!resultado.Succeeded)
+            var resultado = await userManager.CreateAsync(usuario, password: modelo.Password);
+
+            if (resultado.Succeeded)
+            {
+                await signInManager.SignInAsync(usuario, isPersistent: true);
+                return RedirectToAction("Index", "Transacciones");
+            }
+            else
             {
                 foreach (var error in resultado.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
+
                 return View(modelo);
             }
-            await _signInManager.SignInAsync(usuario, isPersistent: true);//Esto sirve para
-            return RedirectToAction("Index", "Transacciones");
+
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
@@ -68,16 +76,19 @@ namespace WA_ControlPresupuesto.Controllers
                 return View(modelo);
             }
 
-            var resultado = await _signInManager.PasswordSignInAsync(modelo.Email, modelo.Password, modelo.Recuerdame, lockoutOnFailure: false);//Si el user colocara varias veces mal su password y queremos que se bloquee la cuenta, debemos cambiar a  true en lockoutOnFailure
+            var resultado = await signInManager.PasswordSignInAsync(modelo.Email,
+                modelo.Password, modelo.Recuerdame, lockoutOnFailure: false);
+
             if (resultado.Succeeded)
             {
                 return RedirectToAction("Index", "Transacciones");
             }
-
-            ModelState.AddModelError(string.Empty, "Nombre de Usuario o Password incorrecto");
-            return View(modelo);
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Nombre de usuario o password incorrecto.");
+                return View(modelo);
+            }
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Logout()
@@ -91,8 +102,6 @@ namespace WA_ControlPresupuesto.Controllers
         public IActionResult OlvideMiPassword(string mensaje = "")
         {
             ViewBag.Mensaje = mensaje;
-            //El view bag es una forma de pasar informacion de un controlador a una vista. 
-            //El view bag se puede pasar de controller a vista y de vista a vista, pero no de vista a controller
             return View();
         }
 
@@ -103,50 +112,70 @@ namespace WA_ControlPresupuesto.Controllers
             var mensaje = "Proceso concluido. Si el email dado se corresponde con uno de nuestros usuarios, en su bandeja de entrada podrá encontrar las instrucciones para recuperar su contraseña.";
             ViewBag.Mensaje = mensaje;
             ModelState.Clear();
-           
-            var usuario = await _userManager.FindByEmailAsync(modelo.Email);
-            if(usuario is null)
+
+            var usuario = await userManager.FindByEmailAsync(modelo.Email);
+
+            if (usuario is null)
             {
                 return View();
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(usuario);
-            var tokenBase64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            var enlace = Url.Action("RecuperarPassword", "Usuarios", new { token = tokenBase64 }, protocol: Request.Scheme);
-            ////Enviar el email
-            await _servicioEmail.EnviarEmailCambioPassword(modelo.Email, enlace);
+            var codigo = await userManager.GeneratePasswordResetTokenAsync(usuario);
+            var codigoBase64 = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(codigo));
+            var enlace = Url.Action("RecuperarPassword", "Usuarios", new { codigo = codigoBase64 },
+                protocol: Request.Scheme);
+            await servicioEmail.EnviarEmailCambioPassword(modelo.Email, enlace);
             return View();
         }
 
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult RecuperarPassword(string token)
+        public IActionResult RecuperarPassword(string codigo = null)
         {
-            if (token is null)
+            if (codigo is null)
             {
-                var mensaje = "Token no ecnontrado";
-                return RedirectToAction("OlvideMiPassword", new { mensaje});
+                var mensaje = "Código no encontrado";
+                return RedirectToAction("OlvideMiPassword", new { mensaje });
             }
+            
 
             var modelo = new RecuperarPasswordViewModel();
-            modelo.TokenReseteo = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
-
+            modelo.CodigoReseteo = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(codigo));
             return View(modelo);
         }
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task <IActionResult> RecuperarPassword(RecuperarPasswordViewModel modelo)
+        public async Task<IActionResult> RecuperarPassword(RecuperarPasswordViewModel modelo)
         {
-            var usuario = await _userManager.FindByEmailAsync(modelo.Email);
-            if(usuario is null)
+            var usuario = await userManager.FindByEmailAsync(modelo.Email);
+
+            if (usuario is null)
             {
                 return RedirectToAction("PasswordCambiado");
             }
-            var resultado = await _userManager.ResetPasswordAsync(usuario, modelo.TokenReseteo, modelo.Password);
-            return RedirectToAction("PasswordCambiado");
-        }
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+            var resultados = await userManager.ResetPasswordAsync(usuario, modelo.CodigoReseteo,
+                modelo.Password);
+            //Aqui puede haber error, por x o y razon, o por ejemplo el password no cumple con las reglas
+            //entonces mejor lo que haremos es mostrar los errores
+            if (resultados.Succeeded)
+            {
+                return RedirectToAction("PasswordCambiado");
+            }
+            else
+            {//Dado que nosotros configuramos en Program un minimo de 6 caracteres, debemos hacer esto para que muestre el mensaje de que esta sucediendo. De lo contrario parecerá que se hizo o recupero la contraseña pero no fue asi. 
+                foreach (var error in resultados.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                return View();
+            }
 
+        }
 
         [HttpGet]
         [AllowAnonymous]

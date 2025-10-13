@@ -2,6 +2,7 @@
 
 namespace WA_ControlPresupuesto.Services
 {
+
     public interface IServicioUsuarios
     {
         int ObtenerUsuarioId();
@@ -20,19 +21,15 @@ namespace WA_ControlPresupuesto.Services
         {
             if (httpContext.User.Identity.IsAuthenticated)
             {
-                //solamente si el usuario esta autenticado
                 var idClaim = httpContext.User
-                    .Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault();//Obtenemos el id del usuario real
-
+                        .Claims.Where(x => x.Type == ClaimTypes.NameIdentifier).FirstOrDefault();
                 var id = int.Parse(idClaim.Value);
                 return id;
             }
             else
             {
                 throw new ApplicationException("El usuario no está autenticado");
-                //esto es si el usuario no esta autenticado
             }
-            return 1;
         }
     }
 }

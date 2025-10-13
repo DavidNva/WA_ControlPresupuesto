@@ -6,10 +6,11 @@ namespace WA_ControlPresupuesto.Services
 {
     public interface IRepositorioUsuarios
     {
-        Task ActualizarUsuario(Usuario usuario);
+        Task Actualizar(Usuario usuario);
+        Task<Usuario> BuscarUsuarioPorEmail(string emailNormalizado);
         Task<int> CrearUsuario(Usuario usuario);
-        Task<Usuario?> ObtenerUsuarioPorEmail(string emailNormalizado);
     }
+
     public class RepositorioUsuarios : IRepositorioUsuarios
     {
         private readonly string connectionString;
@@ -21,28 +22,34 @@ namespace WA_ControlPresupuesto.Services
         public async Task<int> CrearUsuario(Usuario usuario)
         {
             using var connection = new SqlConnection(connectionString);
-            var UsuarioId = await connection.QuerySingleAsync<int>(@"INSERT INTO Usuarios (Email, EmailNormalizado, PasswordHash)
-                                                              VALUES (@Email, @EmailNormalizado, @PasswordHash);
-                                                              SELECT SCOPE_IDENTITY();", usuario);
+            var usuarioId = await connection.QuerySingleAsync<int>(@"
+                        INSERT INTO Usuarios (Email, EmailNormalizado, PasswordHash)
+                        VALUES (@Email, @EmailNormalizado, @PasswordHash);
+                        SELECT SCOPE_IDENTITY();
+                        ", usuario);
 
-            await connection.ExecuteAsync("sp_CrearDatosUsuarioNuevo", new { UsuarioId },
+            await connection.ExecuteAsync("CrearDatosUsuarioNuevo", new { usuarioId },
                 commandType: System.Data.CommandType.StoredProcedure);
-            return UsuarioId;//Devuelve el id del usuario que se acaba de crear
+
+            return usuarioId;
         }
 
-        public async Task<Usuario?> ObtenerUsuarioPorEmail(string emailNormalizado)
+        public async Task<Usuario> BuscarUsuarioPorEmail(string emailNormalizado)
         {
             using var connection = new SqlConnection(connectionString);
-            return await connection.QuerySingleOrDefaultAsync<Usuario>(@"SELECT * FROM Usuarios WHERE EmailNormalizado = @emailNormalizado", new { emailNormalizado });//Usamos QuerySingleOrDefaultAsync porque puede que no exista el usuario, en ese caso devuelve null. Si no colocamos esto y no existe el usuario, lanza una excepción, si usaramos pro ejemplo QuerySingleAsync y no existe el usuario, lanza una excepción. En este caso si no existe el usuario, devuelve null.
-            //Porque colocamos Usuario? con el signo de interrogación, porque puede devolver null si no existe el usuario. 
+            var usuario = await connection.QuerySingleOrDefaultAsync<Usuario>(
+                "SELECT * FROM Usuarios Where EmailNormalizado = @emailNormalizado",
+                new { emailNormalizado });
+            return usuario;
         }
 
-        public async Task ActualizarUsuario(Usuario usuario)
+        public async Task Actualizar(Usuario usuario)
         {
             using var connection = new SqlConnection(connectionString);
-            await connection.ExecuteAsync(@"UPDATE Usuarios SET
-                                            PasswordHash = @PasswordHash
-                                            WHERE Id = @Id", usuario);
+            await connection.ExecuteAsync(@"
+            UPDATE Usuarios 
+            SET PasswordHash = @PasswordHash
+            WHERE Id = @Id", usuario);
         }
     }
 }

@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using WA_ControlPresupuesto.Models;
-using WA_ControlPresupuesto.Services;
 
-namespace ManejoPresupuesto.Servicios
+namespace WA_ControlPresupuesto.Services
 {
     public class UsuarioStore : IUserStore<Usuario>, IUserEmailStore<Usuario>,
         IUserPasswordStore<Usuario>
@@ -31,7 +30,7 @@ namespace ManejoPresupuesto.Servicios
 
         public async Task<Usuario> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            return await repositorioUsuarios.ObtenerUsuarioPorEmail(normalizedEmail);
+            return await repositorioUsuarios.BuscarUsuarioPorEmail(normalizedEmail);
         }
 
         public Task<Usuario> FindByIdAsync(string userId, CancellationToken cancellationToken)
@@ -41,7 +40,7 @@ namespace ManejoPresupuesto.Servicios
 
         public async Task<Usuario> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            return await repositorioUsuarios.ObtenerUsuarioPorEmail(normalizedUserName);
+            return await repositorioUsuarios.BuscarUsuarioPorEmail(normalizedUserName);
         }
 
         public Task<string> GetEmailAsync(Usuario user, CancellationToken cancellationToken)
@@ -118,7 +117,7 @@ namespace ManejoPresupuesto.Servicios
 
         public async Task<IdentityResult> UpdateAsync(Usuario user, CancellationToken cancellationToken)
         {
-            await repositorioUsuarios.ActualizarUsuario(user);
+            await repositorioUsuarios.Actualizar(user);
             return IdentityResult.Success;
         }
     }
