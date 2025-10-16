@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var politicaUsuariosAutenticados = new AuthorizationPolicyBuilder()
     .RequireAuthenticatedUser()
-    .Build();//Con esto estamos creando una politica que requiere que el usuario este autenticado para poder acceder a los controladores y acciones
+    .Build();//Con esto estamos creando una politica que requiere que el usuario este autenticado para poder acceder a los controladores y acciones. Es decir si queremos que aplique a todos los controladores y acciones, lo agregamos en Program.cs sin tener que poner [Authorize] en cada controlador o accion 
 
 
 builder.Services.AddControllersWithViews(opciones =>
@@ -48,7 +48,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignOutScheme = IdentityConstants.ApplicationScheme;
 }).AddCookie(IdentityConstants.ApplicationScheme, opciones =>
 {
-    opciones.LoginPath = "/Usuarios/Login";
+    opciones.LoginPath = "/Usuarios/Login";//Esto sirve para redirigir al usuario a la pagina de login si intenta acceder a una pagina que requiere autenticacion
     //opciones.AccessDeniedPath = "/Usuarios/AccesoDenegado";
 });//Con esto estamos configurando las cookies para que la aplicacion para autenticacion
 
